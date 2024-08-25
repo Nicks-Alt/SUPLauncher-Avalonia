@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35208.52
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SUPLauncher", "SUPLauncher\SUPLauncher.csproj", "{85C1FDCB-A5F0-43F9-8E66-280F491035BD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SUPLauncher.Desktop", "SUPLauncher.Desktop\SUPLauncher.Desktop.csproj", "{120CB533-A7A9-487B-BCFD-868DC9A74F4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{85C1FDCB-A5F0-43F9-8E66-280F491035BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{85C1FDCB-A5F0-43F9-8E66-280F491035BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{85C1FDCB-A5F0-43F9-8E66-280F491035BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{85C1FDCB-A5F0-43F9-8E66-280F491035BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{120CB533-A7A9-487B-BCFD-868DC9A74F4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{120CB533-A7A9-487B-BCFD-868DC9A74F4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{120CB533-A7A9-487B-BCFD-868DC9A74F4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{120CB533-A7A9-487B-BCFD-868DC9A74F4B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C9736C9B-B25D-4125-9869-0731CBE004B2}
+	EndGlobalSection
+EndGlobal
