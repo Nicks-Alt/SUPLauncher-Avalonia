@@ -16,6 +16,9 @@ using Gameloop.Vdf.Linq;
 using Gameloop.Vdf;
 using System.Linq;
 using System.IO.Compression;
+using System.Threading;
+using Avalonia.Threading;
+using System.Threading.Tasks;
 
 namespace SUPLauncher.Views;
 /*
@@ -43,13 +46,17 @@ public partial class MainWindow : Window
     public static string cwrp2 = Dns.GetHostEntry("cwrp2.superiorservers.co").AddressList[0].ToString();
     private static SteamBridge steam = new SteamBridge();
     public static string Username = "";
+    private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(15000)};
     #endregion
     public MainWindow()
     {
         InitializeComponent();
         GetPlayerCountAllServers();
         GetAvatar();
+        InitValvecmd();
         PlayerTracking.Update();
+        tmrAFK.Tick += new EventHandler(tmrAFK_Tick);
+        tmrAFK.Start();
     }
     private void btnClose(object sender, RoutedEventArgs args)
     {
@@ -73,13 +80,13 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {rp1}"
+                FileName = $"steam://run/4000//64bit  -w 300 -h 300 -single_core -nojoy -low -nosound -sw -nopix -novid -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp1}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +connect {rp1}" 
+                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +cl_mouselook 1 +connect {rp1}" 
             });
         
     }
@@ -89,13 +96,13 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {rp2}"
+                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp2}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +connect {rp2}"
+                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +cl_mouselook 1 +connect {rp2}"
             });
     }
     private void btnCWRP_Click(object sender, RoutedEventArgs args)
@@ -205,7 +212,315 @@ public partial class MainWindow : Window
                 await MessageBoxManager.GetMessageBoxStandard("Error", "CSS textures already installed.", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowAsync();
         }
     }
+    private void tmrAFK_Tick(object sender, EventArgs e)
+    {
+        if (chkAFK.IsChecked == true && GetGarrysModProcess() != null)
+        {
+            Task.Factory.StartNew(() => // Do Task Factory because no hanging! // Thank you to Jaiden/Particles for helping with this!
+            {
+                #region AFK Macro
+                SendAFKCommand("\"rp spawn; echo [SUPLauncher] Attempting to spawn...\"");
+                Thread.Sleep(500);
+                SendAFKCommand("\"rp selectweapon pocket; echo [SUPLauncher] Selected pocket\"");
+                Thread.Sleep(500);
+                SendAFKCommand("\"+lookdown; echo [SUPLauncher] Ran lookdown\"");
+                Thread.Sleep(500);
+                SendAFKCommand("\"rp poop; echo [SUPLauncher] Ran /poop\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("+moveright");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveright");
+                SendAFKCommand("+moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                Thread.Sleep(200);
+                SendAFKCommand("-moveleft");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"+attack\""); Thread.Sleep(10);
+                Thread.Sleep(10);
+                SendAFKCommand("\"-attack\"");
+                SendAFKCommand("\"echo [SUPLauncher] Thank you for AFKing on SUP!\"");
+                #endregion
+            });
+        }
+    }
     #region Helpers
+    static Process[] GetGarrysModProcess()
+    {
+        //try
+        //{
+        var temp = Process.GetProcessesByName("gmod");
+        if (temp.Length == 0)
+            temp = Process.GetProcessesByName("hl2");
+        if (temp.Length == 0)
+            temp = null;
+        return temp;
+        //}
+        //catch (Exception)
+        //{
+
+        //    throw;
+        //}
+    }
+    private void InitValvecmd()
+    {
+        if (!File.Exists("valvecmd.exe"))
+            using (FileStream fsDst = new FileStream("valvecmd.exe", FileMode.CreateNew, FileAccess.Write))
+            {
+                byte[] bytes = Properties.Resources.valvecmd;
+                fsDst.Write(bytes, 0, bytes.Length);
+                fsDst.Close();
+                fsDst.Dispose();
+            }
+    }
+    private void SendAFKCommand(string cmd)
+    {
+        ProcessStartInfo startInfo = new ProcessStartInfo();
+        startInfo.FileName = "valvecmd.exe";
+        startInfo.Arguments = cmd;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = false;
+        startInfo.UseShellExecute = false;
+        startInfo.CreateNoWindow = true;
+
+        Process processTemp = new Process();
+        processTemp.StartInfo = startInfo;
+        processTemp.EnableRaisingEvents = false;
+        processTemp.Start();
+    }
     static void DownloadFile(string url, string downloadPath)
     {
         try
