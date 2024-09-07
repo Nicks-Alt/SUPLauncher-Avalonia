@@ -19,6 +19,11 @@ using System.IO.Compression;
 using System.Threading;
 using Avalonia.Threading;
 using System.Threading.Tasks;
+using Avalonia.Platform;
+using System.Text.RegularExpressions;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text.Json.Nodes;
 
 namespace SUPLauncher.Views;
 /*
@@ -46,18 +51,66 @@ public partial class MainWindow : Window
     public static string cwrp2 = Dns.GetHostEntry("cwrp2.superiorservers.co").AddressList[0].ToString();
     private static SteamBridge steam = new SteamBridge();
     public static string Username = "";
-    private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(15000)};
+    private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(20000)};
+    private DispatcherTimer tmrClipboard = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000)};
+    public static Bitmap MEMBER = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MEMBER.png"))); // Rank images
+    public static Bitmap VIP = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/VIP.png")));
+    public static Bitmap MOD = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MOD.png")));
+    public static Bitmap ADMIN = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/ADMIN.png")));
+    public static Bitmap DOUBLE = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/DOUBLE.png")));
+    public static Bitmap SUPER = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/SUPER.png")));
+    public static Bitmap COUNCIL = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/co-blue.png")));
+    public static Bitmap CC = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/cc-forumbar.png")));
+    public static Bitmap ROOT = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/ROOT.png")));
+    private string _clipboardLastText = "";
     #endregion
     public MainWindow()
     {
         InitializeComponent();
+
         GetPlayerCountAllServers();
-        GetAvatar();
+        InitUser();
         InitValvecmd();
         PlayerTracking.Update();
+        SteamCheck();
         tmrAFK.Tick += new EventHandler(tmrAFK_Tick);
+        if (chkStaff.IsChecked == true) { tmrClipboard.Tick += new EventHandler(tmrClipboard_Tick); tmrClipboard.Start(); }
         tmrAFK.Start();
     }
+
+    private void tmrClipboard_Tick(object sender, EventArgs e)
+    {
+        try
+        {
+            Regex SteamID64Regex = new Regex(@"^7\d{16}$");
+            Regex SteamIDRegex = new Regex(@"^STEAM_(0|1):[01]:\d{1,10}$");
+            var clipboard = TopLevel.GetTopLevel(this).Clipboard;
+                string text = "";
+            if (clipboard.GetTextAsync().Result != null)
+            {
+                text = clipboard.GetTextAsync().Result.ToString();
+                if ((SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
+                {
+                    if ((text != _clipboardLastText) && (SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
+                    {
+                        string targUsername = GetNameFromSteamID(text);
+                        List<string> bans = GetBans(text);
+                        SendAFKCommand($"\"rp pm {steam.GetSteamId()} [SUP Launcher POs] {targUsername}({text}) has {bans.Count} POs.\"");
+                        for (int i = 0; i < bans.Count; i++) // Length, reason, timeocurred
+                        {
+                            Thread.Sleep(1000); // You must wait 1 seconds before running "pm" again!
+                            string[] temp = bans[i].Split(",");
+                            SendAFKCommand($"\"rp pm {steam.GetSteamId()} [SUP Launcher POs] #{i + 1}: Banned for {FormatDuration(Convert.ToDouble(temp[0]))} for {temp[1]} on {DateTime.UnixEpoch.AddSeconds(Convert.ToDouble(temp[2])).ToShortDateString()}\"");
+                        }
+                        _clipboardLastText = text.ToString();
+                    }
+                }
+            }
+                
+        }
+        catch (Exception){  }
+    }
+
     private void btnClose(object sender, RoutedEventArgs args)
     {
         this.Close();
@@ -71,8 +124,8 @@ public partial class MainWindow : Window
         Process.Start(new ProcessStartInfo
         {
             UseShellExecute = true,
-            FileName = "https://github.com/Nicks-Alt/SUPLauncher/releases/latest"
-        }); // TODO: CHANGE TO NEW REPO ONCE MADE
+            FileName = "https://github.com/Nicks-Alt/SUPLauncher-Avalonia/releases/latest"
+        }); // TODO: CHANGE TO NEW REPO ONCE MADE done
     }
     private void btnDanktown_Click(object sender, RoutedEventArgs args)
     {
@@ -80,7 +133,7 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit  -w 300 -h 300 -single_core -nojoy -low -nosound -sw -nopix -novid -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp1}"
+                FileName = $"steam://run/4000//64bit  -w 300 -h 300 -single_core -nojoy -low -nosound -sw -nopix -novid -noshaderapi -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp1}"
             });
         else
             Process.Start(new ProcessStartInfo
@@ -167,6 +220,11 @@ public partial class MainWindow : Window
             Process.GetProcessesByName("gmod")[0].Kill(true);
         }
         catch (Exception){} // ignore exceptions
+    }
+    private void chkStaff_CheckChanged(object sender, RoutedEventArgs args)
+    {
+        if (chkStaff.IsChecked == true) { tmrClipboard.Tick += tmrClipboard_Tick; tmrClipboard.Start(); }
+        else tmrClipboard.Stop();
     }
     [DllImport("kernel32.dll", EntryPoint = "GetStdHandle", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
     public static extern IntPtr GetStdHandle(int nStdHandle);
@@ -478,6 +536,14 @@ public partial class MainWindow : Window
         }
     }
     #region Helpers
+    private async void SteamCheck()
+    {
+        if (Process.GetProcessesByName("steam").Length == 0)
+        {
+            await MessageBoxManager.GetMessageBoxStandard("ERROR", "Steam not initialized! Make sure steam is running then run this program again!", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Error).ShowAsync();
+            this.Close();
+        }
+    }
     static Process[] GetGarrysModProcess()
     {
         //try
@@ -505,6 +571,75 @@ public partial class MainWindow : Window
                 fsDst.Close();
                 fsDst.Dispose();
             }
+    }
+    private string GetNameFromSteamID(string steamid)
+    {
+        string Url = $"https://superiorservers.co/api/profile/{steamid}";
+        CookieContainer cookieJar = new CookieContainer();
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+        request.CookieContainer = cookieJar;
+        request.Accept = @"text/html, application/xhtml+xml, */*";
+        request.Referer = @"https://superiorservers.co/api";
+        request.Headers.Add("Accept-Language", "en-GB");
+        request.UserAgent = @"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)";
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        string htmlString;
+        using (var reader = new StreamReader(response.GetResponseStream())) { htmlString = reader.ReadToEnd(); }
+        string username = JsonDocument.Parse(htmlString).RootElement.GetProperty("Badmin").GetProperty("Name").ToString();
+        return username;
+    }
+    private List<string> GetBans(string steamid)
+    {
+        string Url = $"https://superiorservers.co/api/profile/{steamid}";
+        CookieContainer cookieJar = new CookieContainer();
+        HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
+        request.CookieContainer = cookieJar;
+        request.Accept = @"text/html, application/xhtml+xml, */*";
+        request.Referer = @"https://superiorservers.co/api";
+        request.Headers.Add("Accept-Language", "en-GB");
+        request.UserAgent = @"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)";
+        HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        string htmlString;
+        using (var reader = new StreamReader(response.GetResponseStream())) { htmlString = reader.ReadToEnd(); }
+        JsonArray test = JsonSerializer.Deserialize<JsonArray>(JsonDocument.Parse(htmlString).RootElement.GetProperty("Badmin").GetProperty("Bans"));
+        List<string> list = new List<string>(); // Length, Reason, Time.
+        foreach (var ban in test)
+        {
+            list.Add($"{ban["Length"]},{ban["Reason"]},{ban["Time"]}");
+        }
+        return list;
+    }
+    public static string FormatDuration(double seconds)
+    {
+        const int SecondsInMinute = 60;
+        const int SecondsInHour = 3600;
+        const int SecondsInDay = 86400; // 24 * 3600
+        const int SecondsInWeek = 604800; // 7 * 24 * 3600
+
+        if (seconds >= SecondsInWeek)
+        {
+            int weeks = (int)(seconds / SecondsInWeek);
+            return $"{weeks} week{(weeks > 1 ? "s" : "")}";
+        }
+        else if (seconds >= SecondsInDay)
+        {
+            int days = (int)(seconds / SecondsInDay);
+            return $"{days} day{(days > 1 ? "s" : "")}";
+        }
+        else if (seconds >= SecondsInHour)
+        {
+            int hours = (int)(seconds / SecondsInHour);
+            return $"{hours} hour{(hours > 1 ? "s" : "")}";
+        }
+        else if (seconds >= SecondsInMinute)
+        {
+            int minutes = (int)(seconds / SecondsInMinute);
+            return $"{minutes} minute{(minutes > 1 ? "s" : "")}";
+        }
+        else
+        {
+            return $"{(int)seconds} second{(seconds > 1 ? "s" : "")}";
+        }
     }
     private void SendAFKCommand(string cmd)
     {
@@ -634,19 +769,24 @@ public partial class MainWindow : Window
             var jsonRoot = JsonDocument.Parse(htmlString).RootElement.GetProperty("response").GetProperty("Servers");
 
             danktownPlayerCount = jsonRoot[2].GetProperty("Players").GetInt32();
+            var danktownMaxPly = jsonRoot[2].GetProperty("MaxPlayers").GetInt32();
             c18PlayerCount = jsonRoot[3].GetProperty("Players").GetInt32();
+            var c18MaxPly = jsonRoot[3].GetProperty("MaxPlayers").GetInt32();
             cwrpPlayerCount = jsonRoot[4].GetProperty("Players").GetInt32();
+            var cwrpMaxPly = jsonRoot[4].GetProperty("MaxPlayers").GetInt32();
             cwrp2PlayerCount = jsonRoot[5].GetProperty("Players").GetInt32();
+            var cwrp2MaxPly = jsonRoot[5].GetProperty("MaxPlayers").GetInt32();
 
-            lblDanktownPlyCount.Content = $"{danktownPlayerCount.ToString()}/128";
-            lblC18PlyCount.Content = $"{c18PlayerCount.ToString()}/128";
-            lblCWRPPlyCount.Content = $"{cwrpPlayerCount.ToString()}/128";
-            lblCWRP2PlyCount.Content = $"{cwrp2PlayerCount.ToString()}/128";
+            lblDanktownPlyCount.Content = $"{danktownPlayerCount.ToString()}/{danktownMaxPly}";
+            lblC18PlyCount.Content = $"{c18PlayerCount.ToString()}/{c18MaxPly}";
+            lblCWRPPlyCount.Content = $"{cwrpPlayerCount.ToString()}/{cwrpMaxPly}";
+            lblCWRP2PlyCount.Content = $"{cwrp2PlayerCount.ToString()}/{cwrp2MaxPly}";
         }
         catch (Exception){ }
     }
-    void GetAvatar()
+    void InitUser()
     {
+        // Get Avatar from Steam
         try
         {
             var client = new WebClient();
@@ -668,12 +808,94 @@ public partial class MainWindow : Window
                 imageBrush.Source = new Bitmap(new MemoryStream(avatarData));
                 picAvatar.Fill = imageBrush;
             }
-            //if (Settings.BackgroundImagePath != "")
-            //    panel1.BackgroundImage = Image.FromFile(Settings.BackgroundImagePath);
-
-
         }
-        catch (Exception){}
+        catch (Exception){ Console.WriteLine("Error getting avatar from steam"); }
+
+        // Get Rank from SUP
+        try
+        {
+            HttpWebRequest request = WebRequest.CreateHttp("https://superiorservers.co/api/profile/" + steam.GetSteamId());
+            request.UserAgent = "Browser";
+            WebResponse response = null;
+            response = request.GetResponse(); // Get Response from webrequest
+            StreamReader sr = new StreamReader(response.GetResponseStream()); // Create stream to access web data
+            JsonDocument returnData = JsonDocument.Parse(sr.ReadToEnd());
+            JsonElement darkrproot = returnData.RootElement.GetProperty("DarkRP");
+            JsonElement badminRoot = returnData.RootElement.GetProperty("Badmin");
+
+            FirstJoin.Text = DateTime.UnixEpoch.AddSeconds(double.Parse(badminRoot.GetProperty("FirstJoin").GetString())).ToShortDateString();
+            LastSeen.Text = $"{FormatDuration(badminRoot.GetProperty("LastSeen").GetUInt16())} ago";
+            TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString()));
+            string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
+            Playtime.Text = t2;
+            Rank.Text = badminRoot.GetProperty("Ranks").GetProperty("DarkRP").GetString();
+            Money.Text = double.Parse(darkrproot.GetProperty("Money").GetString()).ToString("C0");
+            Karma.Text = darkrproot.GetProperty("Karma").GetString();
+            Org.Text = darkrproot.GetProperty("OrgName").GetString();
+            JsonElement ranksFromResult = badminRoot.GetProperty("Ranks");
+            switch (ranksFromResult.GetProperty("DarkRP").GetString())
+            {
+                case "VIP":
+                    {
+                        picRank.Source = VIP;
+                        chkStaff.IsVisible = false;
+                        break;
+                    }
+                case "Moderator":
+                    {
+                        picRank.Source = MOD;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Admin":
+                    {
+                        picRank.Source = ADMIN;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Double Admin":
+                    {
+                        picRank.Source = DOUBLE;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Super Admin":
+                    {
+                        picRank.Source = SUPER;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Council":
+                    {
+                        picRank.Source = COUNCIL;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Root":
+                    {
+                        picRank.Source = ROOT;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Content Creator":
+                    {
+                        picRank.Source = CC;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                default:
+                    {
+                        picRank.Source = MEMBER;
+                        chkStaff.IsVisible = false;
+                        break;
+                    }
+            }
+        }
+        catch (Exception)
+        {
+
+            throw;
+        }
 
     }
     #endregion
