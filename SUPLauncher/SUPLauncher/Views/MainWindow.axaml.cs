@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿#region Depends 
+using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
@@ -24,19 +25,14 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
+#endregion
 
 namespace SUPLauncher.Views;
 /*
     Questions for peng/king:
 
     Golden poop script?
-    
-
-
-    TODO FROM BLACK MAN:
-    - Move SUPeriorServers to left
-    - Move Server list down
-    - "Your info" box like sup loading screen
+    Addntl features??
  */
 public partial class MainWindow : Window
 {
@@ -64,6 +60,8 @@ public partial class MainWindow : Window
     public static Bitmap ROOT = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/ROOT.png")));
     private string _clipboardLastText = "";
     #endregion
+
+    #region Main
     public MainWindow()
     {
         InitializeComponent();
@@ -77,7 +75,9 @@ public partial class MainWindow : Window
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += new EventHandler(tmrClipboard_Tick); tmrClipboard.Start(); }
         tmrAFK.Start();
     }
+    #endregion
 
+    #region Events
     private void tmrClipboard_Tick(object sender, EventArgs e)
     {
         try
@@ -216,8 +216,25 @@ public partial class MainWindow : Window
     {
         try
         {
-            Process.GetProcessesByName("hl2")[0].Kill(true);
-            Process.GetProcessesByName("gmod")[0].Kill(true);
+            Process.Start(new ProcessStartInfo(){
+                FileName = "cmd.exe",
+                Arguments = "/C taskkill /im gmod.exe /f /t",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }).Start();
+            Process.Start(new ProcessStartInfo(){
+                FileName = "cmd.exe",
+                Arguments = "/C taskkill /im hl2.exe /f /t",
+                UseShellExecute = false,
+                CreateNoWindow = true
+            }).Start();
+            
+            /*
+             
+             THIS IS CANCER AND I DO NOT CONDONE THIS^^^
+             -Nick
+
+             */
         }
         catch (Exception){} // ignore exceptions
     }
@@ -225,50 +242,6 @@ public partial class MainWindow : Window
     {
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += tmrClipboard_Tick; tmrClipboard.Start(); }
         else tmrClipboard.Stop();
-    }
-    [DllImport("kernel32.dll", EntryPoint = "GetStdHandle", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-    public static extern IntPtr GetStdHandle(int nStdHandle);
-
-    [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
-    public static extern int AllocConsole();
-
-    private const int STD_OUTPUT_HANDLE = -11;
-    private const int MY_CODE_PAGE = 437;
-    private async void DownloadTextures(object sender, RoutedEventArgs args)
-    {
-        var box = MessageBoxManager.GetMessageBoxStandard("Download CSS Textures?", "Are you sure you want to download the CSS textures for Garry's Mod?\n\n WARNING: THIS WILL TAKE SOME TIME!", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Info, WindowStartupLocation.CenterOwner);
-        var result = await box.ShowAsync();
-        if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
-        {
-            if (!(Directory.Exists($"{FindGmodFolder()}\\garrysmod\\addons\\css-content-gmodcontent")))
-            {
-                AllocConsole();
-                IntPtr stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-                Microsoft.Win32.SafeHandles.SafeFileHandle safeFileHandle = new Microsoft.Win32.SafeHandles.SafeFileHandle(stdHandle, true);
-                FileStream fileStream = new FileStream(safeFileHandle, FileAccess.Write);
-                StreamWriter standardOutput = new StreamWriter(fileStream);
-                standardOutput.AutoFlush = true;
-                Console.SetOut(standardOutput);
-                Console.WriteLine("DOWNLOADING CSS CONTENT. DO NOT CLOSE THIS WINDOW UNTIL PROCESS IS FINISHED!");
-                string url = "https://suplauncher.s3.us-east-2.amazonaws.com/css-content-gmodcontent.zip"; // Replace with your download URL
-                string downloadPath = "downloaded.zip";      // Temporarily downloaded file
-                string extractPath = $"{FindGmodFolder()}\\garrysmod\\addons";    // Directory to extract contents
-                Console.WriteLine("Downloading file...");
-                DownloadFile(url, downloadPath);
-
-                Console.WriteLine("Extracting contents...");
-                ExtractZip(downloadPath, extractPath);
-
-                Console.WriteLine("Cleaning up...");
-                File.Delete(downloadPath); // Delete the downloaded zip file
-
-                Console.WriteLine("Process completed successfully. Press any key to close the launcher...");
-                Console.ReadKey();
-                this.Close();
-            }
-            else
-                await MessageBoxManager.GetMessageBoxStandard("Error", "CSS textures already installed.", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowAsync();
-        }
     }
     private void tmrAFK_Tick(object sender, EventArgs e)
     {
@@ -535,7 +508,54 @@ public partial class MainWindow : Window
             });
         }
     }
+
+    #endregion
+
     #region Helpers
+    [DllImport("kernel32.dll", EntryPoint = "GetStdHandle", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+    public static extern IntPtr GetStdHandle(int nStdHandle);
+
+    [DllImport("kernel32.dll", EntryPoint = "AllocConsole", SetLastError = true, CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
+    public static extern int AllocConsole();
+
+    private const int STD_OUTPUT_HANDLE = -11;
+    private const int MY_CODE_PAGE = 437;
+    private async void DownloadTextures(object sender, RoutedEventArgs args)
+    {
+        var box = MessageBoxManager.GetMessageBoxStandard("Download CSS Textures?", "Are you sure you want to download the CSS textures for Garry's Mod?\n\n WARNING: THIS WILL TAKE SOME TIME!", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Info, WindowStartupLocation.CenterOwner);
+        var result = await box.ShowAsync();
+        if (result == MsBox.Avalonia.Enums.ButtonResult.Yes)
+        {
+            if (!(Directory.Exists($"{FindGmodFolder()}\\garrysmod\\addons\\css-content-gmodcontent")))
+            {
+                AllocConsole();
+                IntPtr stdHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+                Microsoft.Win32.SafeHandles.SafeFileHandle safeFileHandle = new Microsoft.Win32.SafeHandles.SafeFileHandle(stdHandle, true);
+                FileStream fileStream = new FileStream(safeFileHandle, FileAccess.Write);
+                StreamWriter standardOutput = new StreamWriter(fileStream);
+                standardOutput.AutoFlush = true;
+                Console.SetOut(standardOutput);
+                Console.WriteLine("DOWNLOADING CSS CONTENT. DO NOT CLOSE THIS WINDOW UNTIL PROCESS IS FINISHED!");
+                string url = "https://suplauncher.s3.us-east-2.amazonaws.com/css-content-gmodcontent.zip"; // Replace with your download URL
+                string downloadPath = "downloaded.zip";      // Temporarily downloaded file
+                string extractPath = $"{FindGmodFolder()}\\garrysmod\\addons";    // Directory to extract contents
+                Console.WriteLine("Downloading file...");
+                DownloadFile(url, downloadPath);
+
+                Console.WriteLine("Extracting contents...");
+                ExtractZip(downloadPath, extractPath);
+
+                Console.WriteLine("Cleaning up...");
+                File.Delete(downloadPath); // Delete the downloaded zip file
+
+                Console.WriteLine("Process completed successfully. Press any key to close the launcher...");
+                Console.ReadKey();
+                this.Close();
+            }
+            else
+                await MessageBoxManager.GetMessageBoxStandard("Error", "CSS textures already installed.", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowAsync();
+        }
+    }
     private async void SteamCheck()
     {
         if (Process.GetProcessesByName("steam").Length == 0)
@@ -546,20 +566,12 @@ public partial class MainWindow : Window
     }
     static Process[] GetGarrysModProcess()
     {
-        //try
-        //{
         var temp = Process.GetProcessesByName("gmod");
         if (temp.Length == 0)
             temp = Process.GetProcessesByName("hl2");
         if (temp.Length == 0)
             temp = null;
         return temp;
-        //}
-        //catch (Exception)
-        //{
-
-        //    throw;
-        //}
     }
     private void InitValvecmd()
     {
@@ -601,9 +613,9 @@ public partial class MainWindow : Window
         HttpWebResponse response = (HttpWebResponse)request.GetResponse();
         string htmlString;
         using (var reader = new StreamReader(response.GetResponseStream())) { htmlString = reader.ReadToEnd(); }
-        JsonArray test = JsonSerializer.Deserialize<JsonArray>(JsonDocument.Parse(htmlString).RootElement.GetProperty("Badmin").GetProperty("Bans"));
+        JsonArray banArray = JsonSerializer.Deserialize<JsonArray>(JsonDocument.Parse(htmlString).RootElement.GetProperty("Badmin").GetProperty("Bans"));
         List<string> list = new List<string>(); // Length, Reason, Time.
-        foreach (var ban in test)
+        foreach (var ban in banArray)
         {
             list.Add($"{ban["Length"]},{ban["Reason"]},{ban["Time"]}");
         }
@@ -824,7 +836,7 @@ public partial class MainWindow : Window
             JsonElement badminRoot = returnData.RootElement.GetProperty("Badmin");
 
             FirstJoin.Text = DateTime.UnixEpoch.AddSeconds(double.Parse(badminRoot.GetProperty("FirstJoin").GetString())).ToShortDateString();
-            LastSeen.Text = $"{FormatDuration(badminRoot.GetProperty("LastSeen").GetUInt16())} ago";
+            LastSeen.Text = $"{FormatDuration(badminRoot.GetProperty("LastSeen").GetDouble())} ago";
             TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString()));
             string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
             Playtime.Text = t2;
