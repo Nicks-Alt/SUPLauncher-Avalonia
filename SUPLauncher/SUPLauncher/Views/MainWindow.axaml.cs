@@ -25,6 +25,8 @@ using System.Text.RegularExpressions;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
+using Avalonia;
+using Point = System.Drawing.Point;
 #endregion
 
 namespace SUPLauncher.Views;
@@ -41,10 +43,12 @@ public partial class MainWindow : Window
     private int c18PlayerCount = 0;
     private int cwrpPlayerCount = 0; 
     private int cwrp2PlayerCount = 0;
+    private int cwrp3PlayerCount = 0;
     public static string rp1 = Dns.GetHostEntry("rp.superiorservers.co").AddressList[0].ToString();
     public static string rp2 = Dns.GetHostEntry("rp2.superiorservers.co").AddressList[0].ToString();
     public static string cwrp1 = Dns.GetHostEntry("cwrp.superiorservers.co").AddressList[0].ToString();
     public static string cwrp2 = Dns.GetHostEntry("cwrp2.superiorservers.co").AddressList[0].ToString();
+    public static string cwrp3 = Dns.GetHostEntry("cwrp3.superiorservers.co").AddressList[0].ToString();
     private static SteamBridge steam = new SteamBridge();
     public static string Username = "";
     private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(20000)};
@@ -65,12 +69,11 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
+        SteamCheck();
         GetPlayerCountAllServers();
         InitUser();
         InitValvecmd();
         PlayerTracking.Update();
-        SteamCheck();
         tmrAFK.Tick += new EventHandler(tmrAFK_Tick);
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += new EventHandler(tmrClipboard_Tick); tmrClipboard.Start(); }
         tmrAFK.Start();
@@ -95,12 +98,12 @@ public partial class MainWindow : Window
                     {
                         string targUsername = GetNameFromSteamID(text);
                         List<string> bans = GetBans(text);
-                        SendAFKCommand($"\"rp pm {steam.GetSteamId()} [SUP Launcher POs] {targUsername}({text}) has {bans.Count} POs.\"");
+                        SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] {targUsername}({text}) has {bans.Count} POs.\"");
                         for (int i = 0; i < bans.Count; i++) // Length, reason, timeocurred
                         {
-                            Thread.Sleep(1000); // You must wait 1 seconds before running "pm" again!
+                            Thread.Sleep(2000); // You must wait 1 seconds before running "pm" again!
                             string[] temp = bans[i].Split(",");
-                            SendAFKCommand($"\"rp pm {steam.GetSteamId()} [SUP Launcher POs] #{i + 1}: Banned for {FormatDuration(Convert.ToDouble(temp[0]))} for {temp[1]} on {DateTime.UnixEpoch.AddSeconds(Convert.ToDouble(temp[2])).ToShortDateString()}\"");
+                            SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] #{i + 1}: Banned for {FormatDuration(Convert.ToDouble(temp[0]))} for {temp[1]} on {DateTime.UnixEpoch.AddSeconds(Convert.ToDouble(temp[2])).ToShortDateString()}\"");
                         }
                         _clipboardLastText = text.ToString();
                     }
@@ -133,13 +136,13 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit  -w 300 -h 300 -single_core -nojoy -low -nosound -sw -nopix -novid -noshaderapi -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp1}"
+                FileName = $"steam://run/4000//-64bit  -w 300 -h 300 -single_core -nojoy -low -nosound -sw -nopix -novid -noshaderapi -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp1}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +cl_mouselook 1 +connect {rp1}" 
+                FileName = $"steam://run/4000//-64bit -w {Screens.Primary.Bounds.Width} -h {Screens.Primary.Bounds.Height} -windowed -noborder +cl_mouselook 1 +connect {rp1}" 
             });
         
     }
@@ -149,13 +152,13 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp2}"
+                FileName = $"steam://run/4000//-64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +cl_mouselook 0 +connect {rp2}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +cl_mouselook 1 +connect {rp2}"
+                FileName = $"steam://run/4000//-64bit -w {Screens.Primary.Bounds.Width} -h {Screens.Primary.Bounds.Height} -windowed -noborder +cl_mouselook 1 +connect {rp2}"
             });
     }
     private void btnCWRP_Click(object sender, RoutedEventArgs args)
@@ -164,13 +167,13 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {cwrp1}"
+                FileName = $"steam://run/4000//-64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {cwrp1}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +connect {cwrp1}"
+                FileName = $"steam://run/4000//-64bit -w {Screens.Primary.Bounds.Width} -h {Screens.Primary.Bounds.Height} -windowed -noborder +connect {cwrp1}"
             });
     }
     private void btnCWRP2_Click(object sender, RoutedEventArgs args)
@@ -179,13 +182,28 @@ public partial class MainWindow : Window
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {cwrp2}"
+                FileName = $"steam://run/4000//-64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {cwrp2}"
             });
         else
             Process.Start(new ProcessStartInfo
             {
                 UseShellExecute = true,
-                FileName = $"steam://run/4000//64bit -w 1920 -h 1080 -windowed -noborder +connect {cwrp2}"
+                FileName = $"steam://run/4000//-64bit -w {Screens.Primary.Bounds.Width} -h {Screens.Primary.Bounds.Height} -windowed -noborder +connect {cwrp2}"
+            });
+    }
+    private void btnCWRP3_Click(object sender, RoutedEventArgs args)
+    {
+        if (chkAFK.IsChecked == true)
+            Process.Start(new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                FileName = $"steam://run/4000//-64bit -h 300 -w 100 -single_core -nojoy -low -nosound -sw -noshaderapi -nopix -novid -nopreload -nopreloadmodels -multirun +connect {cwrp3}"
+            });
+        else
+            Process.Start(new ProcessStartInfo
+            {
+                UseShellExecute = true,
+                FileName = $"steam://run/4000//-64bit -w {Screens.Primary.Bounds.Width} -h {Screens.Primary.Bounds.Height} -windowed -noborder +connect {cwrp2}"
             });
     }
     private void Teamspeak(object sender, RoutedEventArgs args)
@@ -788,11 +806,14 @@ public partial class MainWindow : Window
             var cwrpMaxPly = jsonRoot[4].GetProperty("MaxPlayers").GetInt32();
             cwrp2PlayerCount = jsonRoot[5].GetProperty("Players").GetInt32();
             var cwrp2MaxPly = jsonRoot[5].GetProperty("MaxPlayers").GetInt32();
+            cwrp3PlayerCount = jsonRoot[6].GetProperty("Players").GetInt32();
+            var cwrp3MaxPly = jsonRoot[6].GetProperty("MaxPlayers").GetInt32();
 
             lblDanktownPlyCount.Content = $"{danktownPlayerCount.ToString()}/{danktownMaxPly}";
             lblC18PlyCount.Content = $"{c18PlayerCount.ToString()}/{c18MaxPly}";
             lblCWRPPlyCount.Content = $"{cwrpPlayerCount.ToString()}/{cwrpMaxPly}";
             lblCWRP2PlyCount.Content = $"{cwrp2PlayerCount.ToString()}/{cwrp2MaxPly}";
+            lblCWRP3PlyCount.Content = $"{cwrp3PlayerCount.ToString()}/{cwrp3MaxPly}";
         }
         catch (Exception){ }
     }
@@ -840,7 +861,6 @@ public partial class MainWindow : Window
             TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString()));
             string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
             Playtime.Text = t2;
-            Rank.Text = badminRoot.GetProperty("Ranks").GetProperty("DarkRP").GetString();
             Money.Text = double.Parse(darkrproot.GetProperty("Money").GetString()).ToString("C0");
             Karma.Text = darkrproot.GetProperty("Karma").GetString();
             Org.Text = darkrproot.GetProperty("OrgName").GetString();
@@ -849,54 +869,130 @@ public partial class MainWindow : Window
             {
                 case "VIP":
                     {
+                        Rank.Text = "VIP";
                         picRank.Source = VIP;
                         chkStaff.IsVisible = false;
                         break;
                     }
                 case "Moderator":
                     {
+                        Rank.Text = "Moderator";
                         picRank.Source = MOD;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Admin":
                     {
+                        Rank.Text = "Admin";
                         picRank.Source = ADMIN;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Double Admin":
                     {
+                        Rank.Text = "Double Admin";
                         picRank.Source = DOUBLE;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Super Admin":
                     {
+                        Rank.Text = "Super Admin";
                         picRank.Source = SUPER;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Council":
                     {
+                        Rank.Text = "Council";
                         picRank.Source = COUNCIL;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Root":
                     {
+                        Rank.Text = "Root";
                         picRank.Source = ROOT;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 case "Content Creator":
                     {
+                        Rank.Text = "Content Creator";
                         picRank.Source = CC;
                         chkStaff.IsVisible = true;
                         break;
                     }
                 default:
                     {
+                        Rank.Text = "User";
+                        picRank.Source = MEMBER;
+                        chkStaff.IsVisible = false;
+                        break;
+                    }
+            }
+            if (Rank.Text != "User" && Rank.Text != "VIP") return;
+            switch (ranksFromResult.GetProperty("CWRP").GetString())
+            {
+                case "VIP":
+                    {
+                        Rank.Text = "VIP";
+                        picRank.Source = VIP;
+                        chkStaff.IsVisible = false;
+                        break;
+                    }
+                case "Moderator":
+                    {
+                        Rank.Text = "Moderator";
+                        picRank.Source = MOD;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Admin":
+                    {
+                        Rank.Text = "Admin";
+                        picRank.Source = ADMIN;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Double Admin":
+                    {
+                        Rank.Text = "Double Admin";
+                        picRank.Source = DOUBLE;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Super Admin":
+                    {
+                        Rank.Text = "Super Admin";
+                        picRank.Source = SUPER;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Council":
+                    {
+                        Rank.Text = "Council";
+                        picRank.Source = COUNCIL;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Root":
+                    {
+                        Rank.Text = "Root";
+                        picRank.Source = ROOT;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                case "Content Creator":
+                    {
+                        Rank.Text = "Content Creator";
+                        picRank.Source = CC;
+                        chkStaff.IsVisible = true;
+                        break;
+                    }
+                default:
+                    {
+                        Rank.Text = "User";
                         picRank.Source = MEMBER;
                         chkStaff.IsVisible = false;
                         break;

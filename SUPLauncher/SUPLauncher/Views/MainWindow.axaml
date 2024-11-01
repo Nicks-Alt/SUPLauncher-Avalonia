@@ -40,7 +40,7 @@
 			<Image Stretch="UniformToFill" Source="avares://SUPLauncher/Assets/Images/favicon.ico"></Image>
 		</Button>
 		<TextBlock IsHitTestVisible="False" FontSize="24" Foreground="White" FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Margin="15" VerticalAlignment="Top" HorizontalAlignment="Center">SuperiorServers.Co Launcher</TextBlock>
-		<Grid Margin="50,69" VerticalAlignment="Bottom" HorizontalAlignment="Left" ShowGridLines="False" ColumnDefinitions="150, 75" RowDefinitions="40, 40, 40, 40">
+		<Grid Margin="40,59" VerticalAlignment="Bottom" HorizontalAlignment="Left" ShowGridLines="False" ColumnDefinitions="150, 75" RowDefinitions="40, 40, 40, 40, 40">
 			<Button	Grid.Column="0"	Grid.Row="0" HorizontalAlignment="Left"	VerticalAlignment="Top"	Width="225" Click="btnDanktown_Click">
 				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
 					<TextBlock FontFamily="{StaticResource PrototypeFont}" FontSize="20" Foreground="White">Danktown</TextBlock>
@@ -63,6 +63,12 @@
 				<StackPanel Orientation="Horizontal">
 					<TextBlock HorizontalAlignment="Left" FontFamily="{StaticResource PrototypeFont}" FontSize="20" Foreground="White">Clonewars #2</TextBlock>
 					<Label x:Name="lblCWRP2PlyCount" Content="000/000" FontFamily="{StaticResource PrototypeFont}" HorizontalAlignment="Right" Margin="16,0" Foreground="White"></Label>
+				</StackPanel>
+			</Button>
+			<Button	Margin="" Grid.Column="0" Grid.Row="4" HorizontalAlignment="Left" VerticalAlignment="Top" Width="225" Click="btnCWRP3_Click">
+				<StackPanel Orientation="Horizontal">
+					<TextBlock HorizontalAlignment="Left" FontFamily="{StaticResource PrototypeFont}" FontSize="20" Foreground="White">Clonewars #3</TextBlock>
+					<Label x:Name="lblCWRP3PlyCount" Content="000/000" FontFamily="{StaticResource PrototypeFont}" HorizontalAlignment="Right" Margin="16,0" Foreground="White"></Label>
 				</StackPanel>
 			</Button>
 		</Grid>
