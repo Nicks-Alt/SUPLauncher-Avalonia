@@ -15,7 +15,9 @@
 		CornerRadius="5"
 		MaxWidth="800"
 		MaxHeight="500"
+		
 		>
+	
 	<Panel>
 		<ExperimentalAcrylicBorder IsHitTestVisible="False">
 			<ExperimentalAcrylicBorder.Material>
@@ -26,7 +28,7 @@
 					MaterialOpacity="0.65" />
 			</ExperimentalAcrylicBorder.Material>
 		</ExperimentalAcrylicBorder>
-		<Border x:Name="TopBar" IsHitTestVisible="False" VerticalAlignment="Top" HorizontalAlignment="Center" Width="800" Height="55" Background="#93C2EC" BorderBrush="#93C2EC" BorderThickness="20"></Border>
+		<Border x:Name="TopBar" PointerPressed="TopBar_PointerPressed" PointerMoved="TopBar_PointerMoved" PointerReleased="TopBar_PointerReleased" IsHitTestVisible="True" VerticalAlignment="Top" HorizontalAlignment="Center" Width="800" Height="55" Background="#93C2EC" BorderBrush="#93C2EC" BorderThickness="20"></Border>
 		<Button HorizontalAlignment="Left" VerticalAlignment="Top" MaxWidth="60" MaxHeight="56" Click="imgPointerPressed" ToolTip.BetweenShowDelay="0">
 			<ToolTip.Tip>
 				<StackPanel MaxWidth="160">
@@ -40,12 +42,28 @@
 			<Image Stretch="UniformToFill" Source="avares://SUPLauncher/Assets/Images/favicon.ico"></Image>
 		</Button>
 		<TextBlock IsHitTestVisible="False" FontSize="24" Foreground="White" FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Margin="15" VerticalAlignment="Top" HorizontalAlignment="Center">SuperiorServers.Co Launcher</TextBlock>
-		<Grid Margin="40,59" VerticalAlignment="Bottom" HorizontalAlignment="Left" ShowGridLines="False" ColumnDefinitions="150, 75" RowDefinitions="40, 40, 40, 40, 40">
-			<Button	Grid.Column="0"	Grid.Row="0" HorizontalAlignment="Left"	VerticalAlignment="Top"	Width="225" Click="btnDanktown_Click">
+		<Grid Margin="40,59" VerticalAlignment="Bottom" HorizontalAlignment="Left" ShowGridLines="False" ColumnDefinitions="150, 75, 20 ,35" RowDefinitions="40, 40, 40, 40, 40">
+			<Button	Grid.Column="0"	Grid.Row="0" HorizontalAlignment="Left"	VerticalAlignment="Top"	Width="225" Height="37.5" Click="btnDanktown_Click">
 				<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
 					<TextBlock FontFamily="{StaticResource PrototypeFont}" FontSize="20" Foreground="White">Danktown</TextBlock>
 					<Label x:Name="lblDanktownPlyCount" Content="000/000" FontFamily="{StaticResource PrototypeFont}" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="49,0" Foreground="White"></Label>
 				</StackPanel>
+			</Button>
+			<Button x:Name="btnRefresh" Click="btnRefresh_Click" Height="37.5" Width="40" VerticalAlignment="Top" HorizontalAlignment="Center" Grid.Column="3">
+				<ToolTip.Tip>
+					<StackPanel MaxWidth="160">
+						<Image Source="avares://SUPLauncher/Assets/Images/favicon.ico" MaxHeight="24" MaxWidth="24" HorizontalAlignment="Left"></Image>
+						<TextBlock>&#xa;</TextBlock>
+						<TextBlock FontSize="18">Refresh Player Count&#xa;</TextBlock>
+						<TextBlock>&#xa;</TextBlock>
+						<TextBlock>Press this button to refresh the current player count!</TextBlock>
+					</StackPanel>
+				</ToolTip.Tip>
+				<Image x:Name="ReloadImage" Source="avares://SUPLauncher/Assets/Images/refresh.png" HorizontalAlignment="Center" VerticalAlignment="Center" Width="50" Height="25">
+					<Image.RenderTransform>
+						<RotateTransform></RotateTransform>
+					</Image.RenderTransform>
+				</Image>
 			</Button>
 			<Button Margin="" Grid.Column="0" Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Width="225" Click="btnC18_Click">
 				<StackPanel Orientation="Horizontal">
@@ -72,46 +90,56 @@
 				</StackPanel>
 			</Button>
 		</Grid>
+		
 		<CheckBox x:Name="chkAFK"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="White" FontFamily="{StaticResource PrototypeFont}" Margin="300,80" IsCheckedChanged="chkAFK_CheckChanged">
 			<TextBlock Foreground="White" FontFamily="{StaticResource PrototypeFont}">AFK Mode</TextBlock>
 		</CheckBox>
 		<CheckBox x:Name="chkStaff"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Foreground="White" FontFamily="{StaticResource PrototypeFont}" Margin="300,50" IsCheckedChanged="chkStaff_CheckChanged">
 			<TextBlock Foreground="White" FontFamily="{StaticResource PrototypeFont}">PO Messages (Staff)</TextBlock>
 		</CheckBox>
+		<Canvas HorizontalAlignment="Right" VerticalAlignment="Top">
+			<Grid x:Name="StatsGrid" Canvas.Right="10" Canvas.Top="75" VerticalAlignment="Center" HorizontalAlignment="Center" ShowGridLines="False" ColumnDefinitions="120,*,*,*,*,*,*" RowDefinitions="*, *, *, *, *, *, *">
+				<Border Background="#6B6B6B" Grid.Row="0" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border Background="#6B6B6B" Grid.Row="0" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock FontSize="10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">First Join:</TextBlock>
+				<TextBlock x:Name="FirstJoin" FontSize="10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">November 30, 2016</TextBlock>
+				<Border Background="Gray" Grid.Row="1" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border Background="Gray" Grid.Row="1" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock FontSize="10" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Last Seen:</TextBlock>
+				<TextBlock x:Name="LastSeen" FontSize="10" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">60 years ago</TextBlock>
+				<Border Background="#6B6B6B" Grid.Row="2" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border Background="#6B6B6B" Grid.Row="2" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock FontSize="10" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Playtime:</TextBlock>
+				<TextBlock x:Name="Playtime" FontSize="10" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">696969:69:69</TextBlock>
+				<Border Background="Gray" Grid.Row="3" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border Background="Gray" Grid.Row="3" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock FontSize="10" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Rank:</TextBlock>
+				<TextBlock x:Name="Rank" FontSize="10" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">Super Admin</TextBlock>
 
-		<Grid Margin="30,80" VerticalAlignment="Top" HorizontalAlignment="Right" ShowGridLines="False" ColumnDefinitions="75,*,*,*,*,*,*" RowDefinitions="*, *, *, *, *, *, *">
-			<Border Background="#6B6B6B" Grid.Row="0" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="#6B6B6B" Grid.Row="0" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-					<TextBlock FontSize="10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">First Join:</TextBlock>
-					<TextBlock x:Name="FirstJoin" FontSize="10" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">November 30, 2016</TextBlock>
-			<Border Background="Gray" Grid.Row="1" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="Gray" Grid.Row="1" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Last Seen:</TextBlock>
-			<TextBlock x:Name="LastSeen" FontSize="10" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">60 years ago</TextBlock>
-			<Border Background="#6B6B6B" Grid.Row="2" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="#6B6B6B" Grid.Row="2" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Playtime:</TextBlock>
-			<TextBlock x:Name="Playtime" FontSize="10" Grid.Row="2" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">696969:69:69</TextBlock>
-			<Border Background="Gray" Grid.Row="3" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="Gray" Grid.Row="3" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Rank:</TextBlock>
-			<TextBlock x:Name="Rank" FontSize="10" Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">Super Admin</TextBlock>
-			<Border Background="#6B6B6B" Grid.Row="4" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="#6B6B6B" Grid.Row="4" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Money:</TextBlock>
-			<TextBlock x:Name="Money" FontSize="10" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">$69,696,696,696</TextBlock>
-			<Border Background="Gray" Grid.Row="5" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="Gray" Grid.Row="5" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="5" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Karma:</TextBlock>
-			<TextBlock x:Name="Karma" FontSize="10" Grid.Row="5" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">69696969</TextBlock>
-			<Border Background="#6B6B6B" Grid.Row="6" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<Border Background="#6B6B6B" Grid.Row="6" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
-			<TextBlock FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Org:</TextBlock>
-			<TextBlock x:Name="Org" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">CHIRAQ NIGGAS OBLA</TextBlock>
+				<Border x:Name="drpBorderMoney1" IsVisible="False" Background="#6B6B6B" Grid.Row="4" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border x:Name="drpBorderMoney2" IsVisible="False" Background="#6B6B6B" Grid.Row="4" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock x:Name="drpMoneyText" IsVisible="False" FontSize="10" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Money:</TextBlock>
+				<TextBlock x:Name="drpMoney" IsVisible="False" FontSize="10" Grid.Row="4" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">$69,696,696,696</TextBlock>
+				<Border x:Name="drpBorderKarma1" IsVisible="False" Background="Gray" Grid.Row="5" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border x:Name="drpBorderKarma2" IsVisible="False" Background="Gray" Grid.Row="5" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock x:Name="drpKarmaText" IsVisible="False" FontSize="10" Grid.Row="5" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Karma:</TextBlock>
+				<TextBlock x:Name="drpKarma" IsVisible="False" FontSize="10" Grid.Row="5" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">69696969</TextBlock>
+				<Border x:Name="drpBorderOrg1" IsVisible="False" Background="#6B6B6B" Grid.Row="6" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<Border x:Name="drpBorderOrg2" IsVisible="False" Background="#6B6B6B" Grid.Row="6" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
+				<TextBlock x:Name="drpOrgText" IsVisible="False" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Org:</TextBlock>
+				<TextBlock x:Name="drpOrg" IsVisible="False" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">CHIRAQ NIGGAS OBLA</TextBlock>
 
 
-		</Grid>
+			</Grid>
+		</Canvas>
 		
+		<Canvas x:Name="DarkRPStatsCanvas" VerticalAlignment="Center" HorizontalAlignment="Right">
+			<CheckBox x:Name="chkShowDarkRP" Canvas.Right="60" Canvas.Top="-95" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="White" FontFamily="{StaticResource PrototypeFont}" IsCheckedChanged="chkShowDarkRP_CheckChanged">
+				<TextBlock Foreground="White" FontFamily="{StaticResource PrototypeFont}">Show DarkRP Stats</TextBlock>
+			</CheckBox>
+		</Canvas>
+
+
 		<Grid Margin="10" VerticalAlignment="Top" HorizontalAlignment="Right" ShowGridLines="False" ColumnDefinitions="40, 40, 40">
 			<Button  Grid.Column="0" Grid.Row="0" Height="35" Width="35" Click="DownloadTextures">
 				<ToolTip.Tip>

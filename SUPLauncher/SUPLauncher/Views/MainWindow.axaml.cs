@@ -9,7 +9,6 @@ using System.Net;
 using System.Text.Json;
 using Avalonia.Media.Imaging;
 using SUPLauncher.Helpers;
-using System.Windows;
 using MsBox.Avalonia;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
@@ -23,10 +22,9 @@ using System.Threading.Tasks;
 using Avalonia.Platform;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using System.Text.Json.Nodes;
 using Avalonia;
-using Point = System.Drawing.Point;
+using Avalonia.Input;
 #endregion
 
 namespace SUPLauncher.Views;
@@ -53,6 +51,7 @@ public partial class MainWindow : Window
     public static string Username = "";
     private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(20000)};
     private DispatcherTimer tmrClipboard = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000)};
+    private DispatcherTimer tmrRefresh = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(10000) };
     public static Bitmap MEMBER = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MEMBER.png"))); // Rank images
     public static Bitmap VIP = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/VIP.png")));
     public static Bitmap MOD = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MOD.png")));
@@ -62,58 +61,87 @@ public partial class MainWindow : Window
     public static Bitmap COUNCIL = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/co-blue.png")));
     public static Bitmap CC = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/cc-forumbar.png")));
     public static Bitmap ROOT = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/ROOT.png")));
-    private string _clipboardLastText = "";
+    private string _clipboardLastText = ""; // Clipboard previous text
+    private bool blnAllowRefresh = true; // For player count refresh
+    private bool _isDragging;
+    private Avalonia.Point _dragStartPoint;
     #endregion
 
     #region Main
     public MainWindow()
     {
         InitializeComponent();
-        SteamCheck();
         GetPlayerCountAllServers();
         InitUser();
-        InitValvecmd();
-        PlayerTracking.Update();
         tmrAFK.Tick += new EventHandler(tmrAFK_Tick);
+        tmrRefresh.Tick += new EventHandler(tmrRefresh_Tick);
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += new EventHandler(tmrClipboard_Tick); tmrClipboard.Start(); }
         tmrAFK.Start();
+        tmrRefresh.Start();
     }
     #endregion
 
     #region Events
-    private void tmrClipboard_Tick(object sender, EventArgs e)
+
+    private void TopBar_PointerPressed(object sender, PointerPressedEventArgs e)
     {
-        try
-        {
-            Regex SteamID64Regex = new Regex(@"^7\d{16}$");
-            Regex SteamIDRegex = new Regex(@"^STEAM_(0|1):[01]:\d{1,10}$");
-            var clipboard = TopLevel.GetTopLevel(this).Clipboard;
-                string text = "";
-            if (clipboard.GetTextAsync().Result != null)
-            {
-                text = clipboard.GetTextAsync().Result.ToString();
-                if ((SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
-                {
-                    if ((text != _clipboardLastText) && (SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
-                    {
-                        string targUsername = GetNameFromSteamID(text);
-                        List<string> bans = GetBans(text);
-                        SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] {targUsername}({text}) has {bans.Count} POs.\"");
-                        for (int i = 0; i < bans.Count; i++) // Length, reason, timeocurred
-                        {
-                            Thread.Sleep(2000); // You must wait 1 seconds before running "pm" again!
-                            string[] temp = bans[i].Split(",");
-                            SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] #{i + 1}: Banned for {FormatDuration(Convert.ToDouble(temp[0]))} for {temp[1]} on {DateTime.UnixEpoch.AddSeconds(Convert.ToDouble(temp[2])).ToShortDateString()}\"");
-                        }
-                        _clipboardLastText = text.ToString();
-                    }
-                }
-            }
-                
-        }
-        catch (Exception){  }
+        // Capture pointer and store the initial drag point
+        _isDragging = true;
+        _dragStartPoint = e.GetPosition(this);
+        e.Pointer.Capture((IInputElement?)sender);
     }
 
+    private void TopBar_PointerMoved(object sender, PointerEventArgs e)
+    {
+        if (_isDragging)
+        {
+            // Get current pointer position
+            var currentPoint = e.GetPosition(this);
+
+            // Calculate the new window position
+            var offsetX = currentPoint.X - _dragStartPoint.X;
+            var offsetY = currentPoint.Y - _dragStartPoint.Y;
+
+            // Move the window
+            Position = new PixelPoint(Position.X + (int)offsetX, Position.Y + (int)offsetY);
+        }
+    }
+
+    private void TopBar_PointerReleased(object sender, PointerReleasedEventArgs e)
+    {
+        // Release pointer capture and stop dragging
+        _isDragging = false;
+        e.Pointer.Capture(null);
+    }
+    private async void btnRefresh_Click(object sender, RoutedEventArgs args)
+    {
+        if (blnAllowRefresh)
+            GetPlayerCountAllServers();
+        // Find the Image control using FindControl
+        var reloadImage = this.FindControl<Image>("ReloadImage");
+
+        // Access the RotateTransform applied to the Image
+        if (reloadImage?.RenderTransform is RotateTransform rotateTransform)
+        {
+            btnRefresh.IsEnabled = false;
+            const double totalAngle = 360; // Full rotation
+            const double duration = 100; // Total animation time in milliseconds
+            const int steps = 60;         // Number of animation steps (frames)
+            double angleIncrement = totalAngle / steps;
+            double stepDuration = duration / steps;
+
+            for (int i = 0; i < steps; i++)
+            {
+                rotateTransform.Angle += angleIncrement;
+                await Task.Delay((int)stepDuration);
+            }
+
+            // Reset to 0 to avoid accumulation errors
+            rotateTransform.Angle = 0;
+        }
+        btnRefresh.IsEnabled = true;
+        blnAllowRefresh = false;
+    }
     private void btnClose(object sender, RoutedEventArgs args)
     {
         this.Close();
@@ -122,14 +150,11 @@ public partial class MainWindow : Window
     {
         this.WindowState = WindowState.Minimized;
     }
-    private void imgPointerPressed(object sender, RoutedEventArgs args)
+    private void imgPointerPressed(object sender, RoutedEventArgs args) => Process.Start(new ProcessStartInfo
     {
-        Process.Start(new ProcessStartInfo
-        {
-            UseShellExecute = true,
-            FileName = "https://github.com/Nicks-Alt/SUPLauncher-Avalonia/releases/latest"
-        }); // TODO: CHANGE TO NEW REPO ONCE MADE done
-    }
+        UseShellExecute = true,
+        FileName = "https://github.com/Nicks-Alt/SUPLauncher-Avalonia/releases/latest"
+    });
     private void btnDanktown_Click(object sender, RoutedEventArgs args)
     {
         if (chkAFK.IsChecked == true)
@@ -260,6 +285,30 @@ public partial class MainWindow : Window
     {
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += tmrClipboard_Tick; tmrClipboard.Start(); }
         else tmrClipboard.Stop();
+    }
+    private void chkShowDarkRP_CheckChanged(object sender, RoutedEventArgs args)
+    {
+        if (chkShowDarkRP.IsChecked == true)
+        {
+            foreach (Control c in StatsGrid.Children)
+            {
+                if (c.Name is null) continue;
+                if (c.Name.Contains("drp"))
+                    c.IsVisible = true;
+            }
+            Canvas.SetTop(chkShowDarkRP, -35);
+            if (drpOrg.Text == "") { drpOrg.IsVisible = false; drpOrgText.IsVisible = false; drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; Canvas.SetTop(chkShowDarkRP, -55); }
+        }
+        else
+        {
+            foreach (Control c in StatsGrid.Children)
+            {
+                if (c.Name is null) continue;
+                if (c.Name.Contains("drp"))
+                    c.IsVisible = false;
+            }
+            Canvas.SetTop(chkShowDarkRP, -95);
+        }
     }
     private void tmrAFK_Tick(object sender, EventArgs e)
     {
@@ -526,6 +575,46 @@ public partial class MainWindow : Window
             });
         }
     }
+    private void tmrClipboard_Tick(object sender, EventArgs e)
+    {
+        try
+        {
+            Regex SteamID64Regex = new Regex(@"^7\d{16}$");
+            Regex SteamIDRegex = new Regex(@"^STEAM_(0|1):[01]:\d{1,10}$");
+            var clipboard = TopLevel.GetTopLevel(this).Clipboard;
+            string text = "";
+            if (clipboard.GetTextAsync().Result != null)
+            {
+                text = clipboard.GetTextAsync().Result.ToString();
+                if ((SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
+                {
+                    if ((text != _clipboardLastText) && (SteamID64Regex.IsMatch(text) || SteamIDRegex.IsMatch(text)))
+                    {
+                        string targUsername = GetNameFromSteamID(text);
+                        List<string> bans = GetBans(text);
+                        SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] {targUsername}({text}) has {bans.Count} POs.\"");
+                        for (int i = 0; i < bans.Count; i++) // Length, reason, timeocurred
+                        {
+                            Thread.Sleep(2000); // You must wait 1 seconds before running "pm" again!
+                            string[] temp = bans[i].Split(",");
+                            SendAFKCommand($"\"say /pm {steam.GetSteamId()} [SUP Launcher POs] #{i + 1}: Banned for {FormatDuration(Convert.ToDouble(temp[0]))} for {temp[1]} on {DateTime.UnixEpoch.AddSeconds(Convert.ToDouble(temp[2])).ToShortDateString()}\"");
+                        }
+                        _clipboardLastText = text.ToString();
+                    }
+                }
+            }
+
+        }
+        catch (Exception) { }
+    }
+    private void tmrRefresh_Tick(object sender, EventArgs e) 
+    {
+        if (blnAllowRefresh)
+            blnAllowRefresh = false;
+        else
+            blnAllowRefresh = true;
+    
+    }
 
     #endregion
 
@@ -574,7 +663,7 @@ public partial class MainWindow : Window
                 await MessageBoxManager.GetMessageBoxStandard("Error", "CSS textures already installed.", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowAsync();
         }
     }
-    private async void SteamCheck()
+    public async void SteamCheck()
     {
         if (Process.GetProcessesByName("steam").Length == 0)
         {
@@ -591,7 +680,7 @@ public partial class MainWindow : Window
             temp = null;
         return temp;
     }
-    private void InitValvecmd()
+    public void InitValvecmd()
     {
         if (!File.Exists("valvecmd.exe"))
             using (FileStream fsDst = new FileStream("valvecmd.exe", FileMode.CreateNew, FileAccess.Write))
@@ -778,7 +867,7 @@ public partial class MainWindow : Window
         }
         return "";
     }
-    private void GetPlayerCountAllServers() // Ported from OG SUP Launcher
+    public void GetPlayerCountAllServers() // Ported from OG SUP Launcher
     {
         try
         {
@@ -817,7 +906,7 @@ public partial class MainWindow : Window
         }
         catch (Exception){ }
     }
-    void InitUser()
+    public void InitUser()
     {
         // Get Avatar from Steam
         try
@@ -861,9 +950,10 @@ public partial class MainWindow : Window
             TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString()));
             string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
             Playtime.Text = t2;
-            Money.Text = double.Parse(darkrproot.GetProperty("Money").GetString()).ToString("C0");
-            Karma.Text = darkrproot.GetProperty("Karma").GetString();
-            Org.Text = darkrproot.GetProperty("OrgName").GetString();
+            drpMoney.Text = double.Parse(darkrproot.GetProperty("Money").GetString()).ToString("C0");
+            drpKarma.Text = darkrproot.GetProperty("Karma").GetString();
+            drpOrg.Text = darkrproot.GetProperty("OrgName").GetString();
+            if (drpOrg.Text == "") { drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; drpOrg.IsVisible = false; drpOrgText.IsVisible = false; }
             JsonElement ranksFromResult = badminRoot.GetProperty("Ranks");
             switch (ranksFromResult.GetProperty("DarkRP").GetString())
             {
