@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SUPLauncher.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:SUPLauncher.Views"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="SUPLauncher.Views.DupeManager"
+        Title="SUPLauncher"
+	    TransparencyLevelHint="AcrylicBlur"
+	    ExtendClientAreaToDecorationsHint="True"
+	    CanResize="False"
+	    ExtendClientAreaChromeHints="NoChrome"
+	    Icon="avares://SUPLauncher/Assets/Images/favicon.ico"
+		CornerRadius="5"
+		MaxWidth="500"
+		MaxHeight="500"
+		>
+	<Panel>
+		<ExperimentalAcrylicBorder IsHitTestVisible="False">
+			<ExperimentalAcrylicBorder.Material>
+				<ExperimentalAcrylicMaterial
+					BackgroundSource="Digger"
+					TintColor="Black"
+					TintOpacity="1"
+					MaterialOpacity="0.65" />
+			</ExperimentalAcrylicBorder.Material>
+		</ExperimentalAcrylicBorder>
+		<Border x:Name="TopBar" PointerPressed="TopBar_PointerPressed" PointerMoved="TopBar_PointerMoved" PointerReleased="TopBar_PointerReleased" IsHitTestVisible="True" VerticalAlignment="Top" HorizontalAlignment="Center" Width="500" Height="55" Background="#93C2EC" BorderBrush="#93C2EC" BorderThickness="20"></Border>
+		<TextBlock IsHitTestVisible="False" FontSize="24" Foreground="White" FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Margin="15" VerticalAlignment="Top" HorizontalAlignment="Center">Dupe Manager</TextBlock>
+		<Grid Margin="10" VerticalAlignment="Top" HorizontalAlignment="Right" ShowGridLines="False" ColumnDefinitions="40, 40, 40">
+			<Button  Grid.Column="2" Grid.Row="0" Click="btnClose_Click" Height="35" Width="35">
+				<Image Source="avares://SUPLauncher/Assets/Images/close.png" VerticalAlignment="Bottom"></Image>
+			</Button>
+		</Grid>
+		<TreeView x:Name="FileTree" Foreground="White" Width="500" Height="445" HorizontalAlignment="Left" VerticalAlignment="Bottom">
+			<!--<TreeView.ContextMenu>
+				<ContextMenu x:Name="FileTreeContextMenu">
+					<MenuItem Header="Delete" x:Name="DeleteMenuItem" />
+					<MenuItem Header="Move" x:Name="MoveMenuItem" />
+					<MenuItem Header="Import File" x:Name="ImportFileMenuItem" />
+					<MenuItem Header="Import Folder" x:Name="ImportFolderMenuItem" />
+					<Separator/>
+					<MenuItem Header="Properties"/>
+				</ContextMenu>
+			</TreeView.ContextMenu>-->
+		</TreeView>
+		<TextBlock IsHitTestVisible="False" Name="LoadingText" Text="Loading/Refreshing Dupes..." HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="24" Foreground="White" FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" IsVisible="True"/>
+	</Panel>
+
+</Window>

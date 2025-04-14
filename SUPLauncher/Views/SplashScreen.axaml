@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Splash Screen"
+        Width="700" Height="400"
+        WindowStartupLocation="CenterScreen"
+        ShowInTaskbar="False"
+        CanResize="False"
+		x:Class="SUPLauncher.SplashScreen"
+		ExtendClientAreaChromeHints="NoChrome"
+		TransparencyLevelHint="AcrylicBlur"
+	    ExtendClientAreaToDecorationsHint="True"
+		CornerRadius="5"
+		>
+	<Panel>
+		<ExperimentalAcrylicBorder IsHitTestVisible="False">
+			<ExperimentalAcrylicBorder.Material>
+				<ExperimentalAcrylicMaterial
+					BackgroundSource="Digger"
+					TintColor="#35435B"
+					TintOpacity="1"
+					MaterialOpacity="0.65" />
+			</ExperimentalAcrylicBorder.Material>
+		</ExperimentalAcrylicBorder>
+		<Canvas VerticalAlignment="Center" HorizontalAlignment="Center">
+			<Image Source="/Assets/Images/favicon.ico" HorizontalAlignment="Center" VerticalAlignment="Center" Canvas.Left="-160" Canvas.Top="-60" MaxHeight="125"></Image>
+			<TextBlock FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Foreground="White" Canvas.Left="-40.5" Canvas.Top="-50" Text="Sup" FontSize="61"/>
+			<TextBlock FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Foreground="#93C2EC" Canvas.Left="63" Canvas.Top="-50" Text="erior" FontSize="60"/>
+			<TextBlock  Foreground="White" Canvas.Left="26.35" Canvas.Top="3.5" Text="❙" FontSize="58" MaxHeight="200"/>
+			<TextBlock FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Foreground="#93C2EC" Canvas.Left="43" Canvas.Top=".5" Text="Servers" FontSize="40"/>
+			<TextBlock FontFamily="avares://SUPLauncher/Assets/Fonts#Prototype" Foreground="#93C2EC" Canvas.Left="44" Canvas.Top="38" Text="Launcher" FontSize="23"/>
+		</Canvas>
+		<ProgressBar VerticalAlignment="Bottom" HorizontalAlignment="Center" IsIndeterminate="True" Width="700" Height="20" Margin="0" Foreground="#93C2EC"/>
+	</Panel>
+	
+</Window>

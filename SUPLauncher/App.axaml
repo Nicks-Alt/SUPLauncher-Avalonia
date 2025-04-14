@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="SUPLauncher.App"
+             RequestedThemeVariant="Default">
+             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+
+    <Application.Styles>
+        <FluentTheme />
+		<StyleInclude Source="avares://SUPLauncher/Icons.axaml"></StyleInclude>
+		<Style Selector="TreeView TextBlock">
+			<Setter Property="Foreground" Value="White"/>
+		</Style>
+
+	</Application.Styles>
+	<Application.Resources>
+		<FontFamily x:Key="PrototypeFont">avares://SUPLauncher/Assets/Fonts#Prototype</FontFamily>
+	</Application.Resources>
+</Application>
