@@ -25,6 +25,8 @@ using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Input;
+using DiscordRPC;
+using System.Reactive;
 #endregion
 
 namespace SUPLauncher.Views;
@@ -42,6 +44,11 @@ public partial class MainWindow : Window
     private int cwrpPlayerCount = 0; 
     private int cwrp2PlayerCount = 0;
     private int cwrp3PlayerCount = 0;
+    private int danktownMaxPly = 0;
+    private int c18MaxPly = 0;
+    private int cwrpMaxPly = 0;
+    private int cwrp2MaxPly = 0;
+    private int cwrp3MaxPly = 0;
     public static string rp1 = Dns.GetHostEntry("rp.superiorservers.co").AddressList[0].ToString();
     public static string rp2 = Dns.GetHostEntry("rp2.superiorservers.co").AddressList[0].ToString();
     public static string cwrp1 = Dns.GetHostEntry("cwrp.superiorservers.co").AddressList[0].ToString();
@@ -52,6 +59,7 @@ public partial class MainWindow : Window
     private DispatcherTimer tmrAFK = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(20000)};
     private DispatcherTimer tmrClipboard = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(1000)};
     private DispatcherTimer tmrRefresh = new DispatcherTimer() { Interval = TimeSpan.FromMilliseconds(10000) };
+    private DispatcherTimer tmrUpdatePresence = new DispatcherTimer() { Interval = TimeSpan.FromMinutes(2) };
     public static Bitmap MEMBER = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MEMBER.png"))); // Rank images
     public static Bitmap VIP = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/VIP.png")));
     public static Bitmap MOD = new Bitmap(AssetLoader.Open(new Uri("avares://SUPLauncher/Assets/Images/MOD.png")));
@@ -65,6 +73,7 @@ public partial class MainWindow : Window
     private bool blnAllowRefresh = true; // For player count refresh
     private bool _isDragging;
     private Avalonia.Point _dragStartPoint;
+    private DiscordRpcClient discord = new DiscordRpcClient("594668399653814335") { Logger = new DiscordRPC.Logging.ConsoleLogger(DiscordRPC.Logging.LogLevel.Info, true) };
     #endregion
 
     #region Main
@@ -75,9 +84,29 @@ public partial class MainWindow : Window
         InitUser();
         tmrAFK.Tick += new EventHandler(tmrAFK_Tick);
         tmrRefresh.Tick += new EventHandler(tmrRefresh_Tick);
+        tmrUpdatePresence.Tick += new EventHandler(tmrUpdatePresence_Tick);
         if (chkStaff.IsChecked == true) { tmrClipboard.Tick += new EventHandler(tmrClipboard_Tick); tmrClipboard.Start(); }
         tmrAFK.Start();
         tmrRefresh.Start();
+        tmrUpdatePresence.Start();
+        discord.Initialize(); // Initialize discord presence
+        discord.SetPresence(new RichPresence()
+        {
+            Details = "Waiting to join a server...",
+            State = "SuperiorServers.co",
+            Timestamps = new Timestamps() { Start = DateTime.Now },
+            Buttons = new DiscordRPC.Button[]
+                {
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                                new DiscordRPC.Button(){ Label = "Bans", Url = "https://superiorservers.co/bans" }
+                },
+            Assets = new Assets()
+            {
+                LargeImageKey = "suplogo",
+                LargeImageText = "SuperiorServers.co"
+            }
+        });
+
     }
     #endregion
 
@@ -579,6 +608,10 @@ public partial class MainWindow : Window
             });
         }
     }
+    private void tmrUpdatePresence_Tick(object sender, EventArgs e)
+    {
+        GetCurrentServer(); // For Discord status updates
+    }
     private void tmrClipboard_Tick(object sender, EventArgs e)
     {
         try
@@ -665,6 +698,183 @@ public partial class MainWindow : Window
             }
             else
                 await MessageBoxManager.GetMessageBoxStandard("Error", "CSS textures already installed.", MsBox.Avalonia.Enums.ButtonEnum.Ok, MsBox.Avalonia.Enums.Icon.Warning).ShowAsync();
+        }
+    }
+    /// <summary>
+    /// Gets the server name and IP the provided steam user is on
+    /// </summary>
+    /// <param name="steamID">The steamid to use</param>
+    /// <param name="normalState">Whether or not it is normally called via timer or not.</param>
+    void GetCurrentServer()
+    {
+        try
+        {
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12; // Secure security protocol for querying the steam API
+            HttpWebRequest request = WebRequest.CreateHttp("http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=7875E26FC3C740C9901DDA4C6E74EB4E&steamids=" + steam.GetSteamId());
+            request.UserAgent = "Nick";
+            WebResponse response = null;
+            response = request.GetResponse(); // Get Response from webrequest
+            StreamReader sr = new StreamReader(response.GetResponseStream()); // Create stream to access web data
+            var rawResults = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(sr.ReadToEnd());
+            string ip = rawResults.response.players.First.gameserverip.ToString();
+            string playerName = rawResults.response.players.First.personaname.ToString();
+            discord.RegisterUriScheme("4000", executable: "explorer steam://rungameid/4000");
+            if (ip == $"{rp1}:27015")
+            {
+                // Playing on DT
+                discord.SetPresence(new RichPresence()
+                {
+                    Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{rp1}:27015" },
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                            },
+                    Details = "Playing on Danktown",
+                    State = "SuperiorServers.co",
+                    Timestamps = new Timestamps() { Start = DateTime.Now },
+                    Party = new Party()
+                    {
+                        ID = "balls",
+                        Size = danktownPlayerCount,
+                        Max = danktownMaxPly,
+                        Privacy = Party.PrivacySetting.Public
+                    },
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "suplogo",
+                        LargeImageText = "SuperiorServers.co",
+                    },
+
+                });
+            }
+            else if (ip == $"{rp2}:27015")
+            {
+                // Playing on C18
+                discord.SetPresence(new RichPresence()
+                {
+                    Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{rp2}:27015" },
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                            },
+                    Details = "Playing on C18",
+                    State = "SuperiorServers.co",
+                    Timestamps = new Timestamps() { Start = DateTime.Now },
+                    Party = new Party()
+                    {
+                        ID = "balls2",
+                        Size = c18PlayerCount,
+                        Max = c18MaxPly,
+                        Privacy = Party.PrivacySetting.Public
+                    },
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "suplogo",
+                        LargeImageText = "SuperiorServers.co"
+                    }
+                });
+            }
+            else if (ip == $"{cwrp1}:27015")
+            {
+                // Playing on S1
+                discord.SetPresence(new RichPresence()
+                {
+                    Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{cwrp1}:27015" },
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                            },
+                    Details = "Playing on S1",
+                    State = "SuperiorServers.co",
+                    Timestamps = new Timestamps() { Start = DateTime.Now },
+                    Party = new Party()
+                    {
+                        ID = "balls4",
+                        Size = cwrpPlayerCount,
+                        Max = cwrpMaxPly,
+                        Privacy = Party.PrivacySetting.Public
+                    },
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "suplogo",
+                        LargeImageText = "SuperiorServers.co"
+                    }
+                });
+            }
+            else if (ip == $"{cwrp2}:27015")
+            {
+                // Playing on S2
+                discord.SetPresence(new RichPresence()
+                {
+                    Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{cwrp2}:27015" },
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                            },
+                    Details = "Playing on S2",
+                    State = "SuperiorServers.co",
+                    Timestamps = new Timestamps() { Start = DateTime.Now },
+                    Party = new Party()
+                    {
+                        ID = "balls5",
+                        Size = cwrp2PlayerCount,
+                        Max = cwrp2MaxPly,
+                        Privacy = Party.PrivacySetting.Public
+                    },
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "suplogo",
+                        LargeImageText = "SuperiorServers.co"
+                    }
+                });
+            }
+            else if (ip == $"{cwrp3}:27015")
+            {
+                // Playing on S3
+                discord.SetPresence(new RichPresence()
+                {
+                    Buttons = new DiscordRPC.Button[]
+                            {
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{cwrp2}:27015" },
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                            },
+                    Details = "Playing on CWRP #2",
+                    State = "SuperiorServers.co",
+                    Timestamps = new Timestamps() { Start = DateTime.Now },
+                    Party = new Party()
+                    {
+                        ID = "balls6",
+                        Size = cwrp3PlayerCount,
+                        Max = cwrp3MaxPly,
+                        Privacy = Party.PrivacySetting.Public
+                    },
+                    Assets = new Assets()
+                    {
+                        LargeImageKey = "suplogo",
+                        LargeImageText = "SuperiorServers.co"
+                    }
+                });
+            }
+        }
+        catch (Exception)
+        {
+            // Revert to default presence if shit breaks
+            discord.SetPresence(new RichPresence()
+            {
+                Details = "Waiting to join a server...",
+                State = "SuperiorServers.co",
+                Timestamps = new Timestamps() { Start = DateTime.Now },
+                Buttons = new DiscordRPC.Button[]
+                {
+                                new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
+                                new DiscordRPC.Button(){ Label = "Bans", Url = "https://superiorservers.co/bans" }
+                },
+                Assets = new Assets()
+                {
+                    LargeImageKey = "suplogo",
+                    LargeImageText = "SuperiorServers.co"
+                }
+            });
         }
     }
     public async void SteamCheck()
@@ -892,15 +1102,15 @@ public partial class MainWindow : Window
             var jsonRoot = JsonDocument.Parse(htmlString).RootElement.GetProperty("response").GetProperty("Servers");
 
             danktownPlayerCount = jsonRoot[2].GetProperty("Players").GetInt32();
-            var danktownMaxPly = jsonRoot[2].GetProperty("MaxPlayers").GetInt32();
+            danktownMaxPly = jsonRoot[2].GetProperty("MaxPlayers").GetInt32();
             c18PlayerCount = jsonRoot[3].GetProperty("Players").GetInt32();
-            var c18MaxPly = jsonRoot[3].GetProperty("MaxPlayers").GetInt32();
+            c18MaxPly = jsonRoot[3].GetProperty("MaxPlayers").GetInt32();
             cwrpPlayerCount = jsonRoot[4].GetProperty("Players").GetInt32();
-            var cwrpMaxPly = jsonRoot[4].GetProperty("MaxPlayers").GetInt32();
+            cwrpMaxPly = jsonRoot[4].GetProperty("MaxPlayers").GetInt32();
             cwrp2PlayerCount = jsonRoot[5].GetProperty("Players").GetInt32();
-            var cwrp2MaxPly = jsonRoot[5].GetProperty("MaxPlayers").GetInt32();
+            cwrp2MaxPly = jsonRoot[5].GetProperty("MaxPlayers").GetInt32();
             cwrp3PlayerCount = jsonRoot[6].GetProperty("Players").GetInt32();
-            var cwrp3MaxPly = jsonRoot[6].GetProperty("MaxPlayers").GetInt32();
+            cwrp3MaxPly = jsonRoot[6].GetProperty("MaxPlayers").GetInt32();
 
             lblDanktownPlyCount.Content = $"{danktownPlayerCount.ToString()}/{danktownMaxPly}";
             lblC18PlyCount.Content = $"{c18PlayerCount.ToString()}/{c18MaxPly}";
