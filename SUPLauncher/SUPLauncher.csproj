@@ -5,6 +5,9 @@
     <LangVersion>latest</LangVersion>
     <Company>"Nick"</Company>
     <Authors>"Nick"</Authors>
+    <Version></Version>
+    <FileVersion>1.0.0.1</FileVersion>
+    <AssemblyVersion>1.0.0.1</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

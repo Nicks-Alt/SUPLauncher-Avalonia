@@ -15,6 +15,7 @@
 		CornerRadius="5"
 		MaxWidth="800"
 		MaxHeight="500"
+		WindowStartupLocation="CenterScreen"
 		>
 	<Panel>
 		<ExperimentalAcrylicBorder IsHitTestVisible="False">

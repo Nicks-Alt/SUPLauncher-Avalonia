@@ -29,6 +29,7 @@ public partial class DupeManager : Window
     private string rootPath = $@"{FindGmodFolder()}\garrysmod\data\advdupe2"; // The path to the root folder
     private DispatcherTimer _timer; // Timer for the animation
     private int _dotIndex = 0;  // To keep track of the current dot pattern
+    private int i = 0;
     public DupeManager()
     {
         InitializeComponent();
@@ -39,9 +40,19 @@ public partial class DupeManager : Window
         };
         _timer.Tick += OnTimerTick;  // Attach the Tick event handler
         LoadTreeView(rootPath); // Load the TreeView asynchronously
+        var contextMenu = new ContextMenu(); // Set context menu for whole tree control
+        var importItem = new MenuItem { Header = "Import File" };
+        importItem.Click += (sender, e) => ImportFile(rootPath); // Handle import click
+        contextMenu.Items.Add(importItem);
+        contextMenu.Items.Add(new Separator());
+        var importFolder = new MenuItem { Header = "Import Folder" };
+        importFolder.Click += (sender, e) => ImportFolder(rootPath); // Handle import click
+        contextMenu.Items.Add(importFolder);
+        FileTree.ContextMenu = contextMenu;
     }
     private async void LoadTreeView(string rootPath)
     {
+        i = 0;
         StartLoadingAnimation();
         var rootItem = await CreateTreeItemAsync(rootPath); // Use async loading of directories/files
         FileTree.ItemsSource = new List<TreeViewItem> { rootItem };
@@ -106,8 +117,8 @@ public partial class DupeManager : Window
     {
         this.Close();
     }
-    // Asynchronously create a TreeViewItem for a given directory
-    private async Task<TreeViewItem> CreateTreeItemAsync(string path, int i = 0)
+    // Asynchronously create a TreeViewItem for a given directory | This shit fucks
+    private async Task<TreeViewItem> CreateTreeItemAsync(string path)
     {
         bool isDirectory = Directory.Exists(path);
         string name = Path.GetFileName(path);
@@ -124,25 +135,42 @@ public partial class DupeManager : Window
         stack.Children.Add(new TextBlock { Text = name });
 
         var item = new TreeViewItem { Header = stack };
+
         var contextMenu = new ContextMenu();
         // Add context menu for right-click
-        var deleteItem = new MenuItem { Header = "Delete" };
-        deleteItem.Click += (sender, e) => DeleteFile(path); // Handle delete click
-        contextMenu.Items.Add(deleteItem);
-        var moveItem = new MenuItem { Header = "Move" };
-        moveItem.Click += (sender, e) => MoveFile(path); // Handle move click
-        contextMenu.Items.Add(moveItem);
-        contextMenu.Items.Add(new Separator());
-        var importItem = new MenuItem { Header = "Import File" };
-        importItem.Click += (sender, e) => ImportFile(path); // Handle import click
-        contextMenu.Items.Add(importItem);
 
-        var importFolder = new MenuItem { Header = "Import Folder" };
-        importFolder.Click += (sender, e) => ImportFolder(path); // Handle import click
-        contextMenu.Items.Add(importFolder);
+        if (i != 0) // if it isnt the root
+        {
+            var deleteItem = new MenuItem { Header = "Delete" };
+            deleteItem.Click += (sender, e) => DeleteFile(path); // Handle delete click
+            contextMenu.Items.Add(deleteItem);
 
+            var moveItem = new MenuItem { Header = "Move" };
+            moveItem.Click += (sender, e) => MoveFile(path); // Handle move click
+            contextMenu.Items.Add(moveItem);
+            contextMenu.Items.Add(new Separator());
+
+            var importItem = new MenuItem { Header = "Import File" };
+            importItem.Click += (sender, e) => ImportFile(path); // Handle import click
+            contextMenu.Items.Add(importItem);
+
+            var importFolder = new MenuItem { Header = "Import Folder" };
+            importFolder.Click += (sender, e) => ImportFolder(path); // Handle import click
+            contextMenu.Items.Add(importFolder);
+        }
+        else
+        {
+            var importItem = new MenuItem { Header = "Import File" };
+            importItem.Click += (sender, e) => ImportFile(path); // Handle import click
+            contextMenu.Items.Add(importItem);
+            contextMenu.Items.Add(new Separator());
+            var importFolder = new MenuItem { Header = "Import Folder" };
+            importFolder.Click += (sender, e) => ImportFolder(path); // Handle import click
+            contextMenu.Items.Add(importFolder);
+        }
+        i++;
         item.ContextMenu = contextMenu;
-        contextMenu.Opening += MenuOpening;
+        
 
         if (isDirectory)
         {
@@ -162,18 +190,6 @@ public partial class DupeManager : Window
         }
 
         return item;
-    }
-    private void MenuOpening(object sender, CancelEventArgs e)
-    {
-        // Get the currently hovered/selected item
-        var selectedItem = FileTree.SelectedItem;
-
-        // Check if it's the root folder
-        if (FileTree.Items?.Cast<object>().FirstOrDefault() == selectedItem) // Yeah i dont fucking know man -Nick
-        {
-            // Cancel context menu for the root folder
-            e.Cancel = true;
-        }
     }
     private void UpdateTreeView()
     {
@@ -382,7 +398,7 @@ public partial class DupeManager : Window
         {
             Console.WriteLine($"Found steam install: {steamInstallPath}");
 
-            string steamLibraryVdf = System.IO.Path.Combine(steamInstallPath, "steamapps", "libraryfolders.vdf");
+            string steamLibraryVdf = Path.Combine(steamInstallPath, "steamapps", "libraryfolders.vdf");
 
             if (File.Exists(steamLibraryVdf))
             {
@@ -393,9 +409,9 @@ public partial class DupeManager : Window
                 {
                     foreach (VProperty path in library.Value.Children<VProperty>().Where((v) => v.Key == "path"))
                     {
-                        string gmodFolder = System.IO.Path.Combine(path.Value.ToString(), "steamapps", "common", "GarrysMod");
+                        string gmodFolder = Path.Combine(path.Value.ToString(), "steamapps", "common", "GarrysMod");
 
-                        if (Directory.Exists(gmodFolder) && File.Exists(System.IO.Path.Combine(gmodFolder, "garrysmod", "cfg", "mount.cfg")))
+                        if (Directory.Exists(gmodFolder) && File.Exists(Path.Combine(gmodFolder, "garrysmod", "cfg", "mount.cfg")))
                         {
                             Console.WriteLine($"Found gmod folder: {gmodFolder}");
                             return gmodFolder;
@@ -405,15 +421,5 @@ public partial class DupeManager : Window
             }
         }
         return "";
-    }
-}
-
-static class Extensions
-{
-    public static IEnumerable<object> AddOrCreate(this IEnumerable<object> list, object item)
-    {
-        var temp = new List<object>(list ?? new List<object>());
-        temp.Add(item);
-        return temp;
     }
 }

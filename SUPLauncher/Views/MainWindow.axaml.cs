@@ -74,6 +74,7 @@ public partial class MainWindow : Window
     private bool _isDragging;
     private Avalonia.Point _dragStartPoint;
     private DiscordRpcClient discord = new DiscordRpcClient("594668399653814335") { Logger = new DiscordRPC.Logging.ConsoleLogger(DiscordRPC.Logging.LogLevel.Info, true) };
+    private readonly AutoUpdater _updater;
     #endregion
 
     #region Main
@@ -94,7 +95,7 @@ public partial class MainWindow : Window
         {
             Details = "Waiting to join a server...",
             State = "SuperiorServers.co",
-            Timestamps = new Timestamps() { Start = DateTime.Now },
+            Timestamps = Timestamps.Now,
             Buttons = new DiscordRPC.Button[]
                 {
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
@@ -106,7 +107,14 @@ public partial class MainWindow : Window
                 LargeImageText = "SuperiorServers.co"
             }
         });
-
+        _updater = new AutoUpdater(this);
+        this.Opened += async (sender, e) =>
+        {
+            await Task.Run(async () =>
+            {
+                await _updater.CheckAndShowUpdateDialog();
+            });
+        };
     }
     #endregion
 
@@ -731,7 +739,6 @@ public partial class MainWindow : Window
                             },
                     Details = "Playing on Danktown",
                     State = "SuperiorServers.co",
-                    Timestamps = new Timestamps() { Start = DateTime.Now },
                     Party = new Party()
                     {
                         ID = "balls",
@@ -759,7 +766,6 @@ public partial class MainWindow : Window
                             },
                     Details = "Playing on C18",
                     State = "SuperiorServers.co",
-                    Timestamps = new Timestamps() { Start = DateTime.Now },
                     Party = new Party()
                     {
                         ID = "balls2",
@@ -786,7 +792,6 @@ public partial class MainWindow : Window
                             },
                     Details = "Playing on S1",
                     State = "SuperiorServers.co",
-                    Timestamps = new Timestamps() { Start = DateTime.Now },
                     Party = new Party()
                     {
                         ID = "balls4",
@@ -813,7 +818,6 @@ public partial class MainWindow : Window
                             },
                     Details = "Playing on S2",
                     State = "SuperiorServers.co",
-                    Timestamps = new Timestamps() { Start = DateTime.Now },
                     Party = new Party()
                     {
                         ID = "balls5",
@@ -840,7 +844,6 @@ public partial class MainWindow : Window
                             },
                     Details = "Playing on CWRP #2",
                     State = "SuperiorServers.co",
-                    Timestamps = new Timestamps() { Start = DateTime.Now },
                     Party = new Party()
                     {
                         ID = "balls6",
@@ -863,7 +866,6 @@ public partial class MainWindow : Window
             {
                 Details = "Waiting to join a server...",
                 State = "SuperiorServers.co",
-                Timestamps = new Timestamps() { Start = DateTime.Now },
                 Buttons = new DiscordRPC.Button[]
                 {
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
