@@ -60,7 +60,7 @@ public partial class App : Application
             // Assuming these methods are in MainWindow class
             _mainWindow.SteamCheck();
             _mainWindow.InitValvecmd();
-            PlayerTracking.Update();
+            Telemetry.Update();
         });
     }
 

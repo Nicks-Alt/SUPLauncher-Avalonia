@@ -16,8 +16,8 @@
 # Mono auto generated files
 mono_crash.*
 
-# Player Tracking Code
-Playertracking.cs
+# Telemetry Code
+Telemetry.cs
 
 # Build results
 [Dd]ebug/

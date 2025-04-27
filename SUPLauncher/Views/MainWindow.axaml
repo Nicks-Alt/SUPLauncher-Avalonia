@@ -128,7 +128,7 @@
 				<Border x:Name="drpBorderOrg1" IsVisible="False" Background="#6B6B6B" Grid.Row="6" Grid.Column="0"  Width="120" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
 				<Border x:Name="drpBorderOrg2" IsVisible="False" Background="#6B6B6B" Grid.Row="6" Grid.Column="1"  Width="120"  HorizontalAlignment="Center" VerticalAlignment="Center" Height="20"></Border>
 				<TextBlock x:Name="drpOrgText" IsVisible="False" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="0" Foreground="White">Org:</TextBlock>
-				<TextBlock x:Name="drpOrg" IsVisible="False" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White">CHIRAQ NIGGAS OBLA</TextBlock>
+				<TextBlock x:Name="drpOrg" IsVisible="False" FontSize="10" Grid.Row="6" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Column="1" Foreground="White"></TextBlock>
 
 
 			</Grid>

@@ -26,16 +26,9 @@ using System.Text.Json.Nodes;
 using Avalonia;
 using Avalonia.Input;
 using DiscordRPC;
-using System.Reactive;
 #endregion
 
 namespace SUPLauncher.Views;
-/*
-    Questions for peng/king:
-
-    Golden poop script?
-    Addntl features??
- */
 public partial class MainWindow : Window
 {
     #region Globals
@@ -73,7 +66,7 @@ public partial class MainWindow : Window
     private bool blnAllowRefresh = true; // For player count refresh
     private bool _isDragging;
     private Avalonia.Point _dragStartPoint;
-    private DiscordRpcClient discord = new DiscordRpcClient("594668399653814335") { Logger = new DiscordRPC.Logging.ConsoleLogger(DiscordRPC.Logging.LogLevel.Info, true) };
+    private readonly DiscordRpcClient discord = new DiscordRpcClient("594668399653814335") { Logger = new DiscordRPC.Logging.ConsoleLogger(DiscordRPC.Logging.LogLevel.Info, true) };
     private readonly AutoUpdater _updater;
     #endregion
 
@@ -338,7 +331,7 @@ public partial class MainWindow : Window
                     c.IsVisible = true;
             }
             Canvas.SetTop(chkShowDarkRP, -35);
-            if (drpOrg.Text == "") { drpOrg.IsVisible = false; drpOrgText.IsVisible = false; drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; Canvas.SetTop(chkShowDarkRP, -55); }
+            if (drpOrg.Text == null) { drpOrg.IsVisible = false; drpOrgText.IsVisible = false; drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; Canvas.SetTop(chkShowDarkRP, -55); }
         }
         else
         {
@@ -672,6 +665,9 @@ public partial class MainWindow : Window
 
     private const int STD_OUTPUT_HANDLE = -11;
     private const int MY_CODE_PAGE = 437;
+    /// <summary>
+    /// Downloads the textures for counter-strike source via the button on the form
+    /// </summary>
     private async void DownloadTextures(object sender, RoutedEventArgs args)
     {
         var box = MessageBoxManager.GetMessageBoxStandard("Download CSS Textures?", "Are you sure you want to download the CSS textures for Garry's Mod?\n\n WARNING: THIS WILL TAKE SOME TIME!", MsBox.Avalonia.Enums.ButtonEnum.YesNo, MsBox.Avalonia.Enums.Icon.Info, WindowStartupLocation.CenterOwner);
@@ -709,10 +705,10 @@ public partial class MainWindow : Window
         }
     }
     /// <summary>
-    /// Gets the server name and IP the provided steam user is on
+    /// Gets the server name and IP the provided steam user is on.
+    /// <para></para>
+    /// <para>NOTE: This only works if the user has their game visibilty set to public!</para>
     /// </summary>
-    /// <param name="steamID">The steamid to use</param>
-    /// <param name="normalState">Whether or not it is normally called via timer or not.</param>
     void GetCurrentServer()
     {
         try
@@ -726,6 +722,7 @@ public partial class MainWindow : Window
             var rawResults = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(sr.ReadToEnd());
             string ip = rawResults.response.players.First.gameserverip.ToString();
             string playerName = rawResults.response.players.First.personaname.ToString();
+            GetPlayerCountAllServers();
             discord.RegisterUriScheme("4000", executable: "explorer steam://rungameid/4000");
             if (ip == $"{rp1}:27015")
             {
@@ -738,14 +735,6 @@ public partial class MainWindow : Window
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
                             },
                     Details = "Playing on Danktown",
-                    State = "SuperiorServers.co",
-                    Party = new Party()
-                    {
-                        ID = "balls",
-                        Size = danktownPlayerCount,
-                        Max = danktownMaxPly,
-                        Privacy = Party.PrivacySetting.Public
-                    },
                     Assets = new Assets()
                     {
                         LargeImageKey = "suplogo",
@@ -753,6 +742,7 @@ public partial class MainWindow : Window
                     },
 
                 });
+                discord.UpdateState($"Players: {danktownPlayerCount}/{danktownMaxPly}");
             }
             else if (ip == $"{rp2}:27015")
             {
@@ -765,20 +755,13 @@ public partial class MainWindow : Window
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
                             },
                     Details = "Playing on C18",
-                    State = "SuperiorServers.co",
-                    Party = new Party()
-                    {
-                        ID = "balls2",
-                        Size = c18PlayerCount,
-                        Max = c18MaxPly,
-                        Privacy = Party.PrivacySetting.Public
-                    },
                     Assets = new Assets()
                     {
                         LargeImageKey = "suplogo",
                         LargeImageText = "SuperiorServers.co"
                     }
                 });
+                discord.UpdateState($"Players: {c18PlayerCount}/{c18MaxPly}");
             }
             else if (ip == $"{cwrp1}:27015")
             {
@@ -791,20 +774,13 @@ public partial class MainWindow : Window
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
                             },
                     Details = "Playing on S1",
-                    State = "SuperiorServers.co",
-                    Party = new Party()
-                    {
-                        ID = "balls4",
-                        Size = cwrpPlayerCount,
-                        Max = cwrpMaxPly,
-                        Privacy = Party.PrivacySetting.Public
-                    },
                     Assets = new Assets()
                     {
                         LargeImageKey = "suplogo",
                         LargeImageText = "SuperiorServers.co"
                     }
                 });
+                discord.UpdateState($"Players: {cwrpPlayerCount}/{cwrpMaxPly}");
             }
             else if (ip == $"{cwrp2}:27015")
             {
@@ -817,20 +793,13 @@ public partial class MainWindow : Window
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
                             },
                     Details = "Playing on S2",
-                    State = "SuperiorServers.co",
-                    Party = new Party()
-                    {
-                        ID = "balls5",
-                        Size = cwrp2PlayerCount,
-                        Max = cwrp2MaxPly,
-                        Privacy = Party.PrivacySetting.Public
-                    },
                     Assets = new Assets()
                     {
                         LargeImageKey = "suplogo",
                         LargeImageText = "SuperiorServers.co"
                     }
                 });
+                discord.UpdateState($"Players: {cwrp2PlayerCount}/{cwrp2MaxPly}");
             }
             else if (ip == $"{cwrp3}:27015")
             {
@@ -839,24 +808,17 @@ public partial class MainWindow : Window
                 {
                     Buttons = new DiscordRPC.Button[]
                             {
-                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{cwrp2}:27015" },
+                                new DiscordRPC.Button() { Label = "Join", Url = $"steam://connect/{cwrp3}:27015" },
                                 new DiscordRPC.Button(){ Label = "Forums", Url = "https://superiorservers.co/" },
                             },
-                    Details = "Playing on CWRP #2",
-                    State = "SuperiorServers.co",
-                    Party = new Party()
-                    {
-                        ID = "balls6",
-                        Size = cwrp3PlayerCount,
-                        Max = cwrp3MaxPly,
-                        Privacy = Party.PrivacySetting.Public
-                    },
+                    Details = "Playing on S3",
                     Assets = new Assets()
                     {
                         LargeImageKey = "suplogo",
                         LargeImageText = "SuperiorServers.co"
                     }
                 });
+                discord.UpdateState($"Players: {cwrp3PlayerCount}/{cwrp3MaxPly}");
             }
         }
         catch (Exception)
@@ -879,7 +841,10 @@ public partial class MainWindow : Window
             });
         }
     }
-    public async void SteamCheck()
+    /// <summary>
+    /// Checks to see if steam is running.
+    /// </summary>
+    public async void SteamCheck() // Public due to App.axaml.cs needing to call it
     {
         if (Process.GetProcessesByName("steam").Length == 0)
         {
@@ -887,7 +852,11 @@ public partial class MainWindow : Window
             this.Close();
         }
     }
-    static Process[] GetGarrysModProcess()
+    /// <summary>
+    /// Gets the gmod process in the process tree. Supports both 32 and 64bit binaries.
+    /// </summary>
+    /// <returns></returns>
+    private static Process[] GetGarrysModProcess()
     {
         var temp = Process.GetProcessesByName("gmod");
         if (temp.Length == 0)
@@ -896,7 +865,11 @@ public partial class MainWindow : Window
             temp = null;
         return temp;
     }
-    public void InitValvecmd()
+    /// <summary>
+    /// Creates the valvecmd executable in the home directory of the SUP Launcher for use within the program
+    /// <para>Github repo: https://github.com/Python1320/valvecmd</para>
+    /// </summary>
+    public void InitValvecmd() // Public due to App.axaml.cs needing to call it
     {
         if (!File.Exists("valvecmd.exe"))
             using (FileStream fsDst = new FileStream("valvecmd.exe", FileMode.CreateNew, FileAccess.Write))
@@ -907,6 +880,11 @@ public partial class MainWindow : Window
                 fsDst.Dispose();
             }
     }
+    /// <summary>
+    /// Gets a name from a steamid using SUP's API
+    /// </summary>
+    /// <param name="steamid">The steamid to query</param>
+    /// <returns></returns>
     private string GetNameFromSteamID(string steamid)
     {
         string Url = $"https://superiorservers.co/api/profile/{steamid}";
@@ -923,6 +901,11 @@ public partial class MainWindow : Window
         string username = JsonDocument.Parse(htmlString).RootElement.GetProperty("Badmin").GetProperty("Name").ToString();
         return username;
     }
+    /// <summary>
+    /// Gets and retrieves the bans for a specific steamid using SUP's API
+    /// </summary>
+    /// <param name="steamid">The steamid to query</param>
+    /// <returns></returns>
     private List<string> GetBans(string steamid)
     {
         string Url = $"https://superiorservers.co/api/profile/{steamid}";
@@ -944,6 +927,11 @@ public partial class MainWindow : Window
         }
         return list;
     }
+    /// <summary>
+    /// Formats time from seconds to minutes, hours, days & weeks.
+    /// </summary>
+    /// <param name="seconds">The amount of seconds</param>
+    /// <returns></returns>
     public static string FormatDuration(double seconds)
     {
         const int SecondsInMinute = 60;
@@ -976,7 +964,11 @@ public partial class MainWindow : Window
             return $"{(int)seconds} second{(seconds > 1 ? "s" : "")}";
         }
     }
-    private void SendAFKCommand(string cmd)
+    /// <summary>
+    /// Used for sending commands to gmod using valvecmd
+    /// </summary>
+    /// <param name="cmd">The command to run</param>
+    private static void SendAFKCommand(string cmd)
     {
         ProcessStartInfo startInfo = new ProcessStartInfo();
         startInfo.FileName = "valvecmd.exe";
@@ -991,6 +983,11 @@ public partial class MainWindow : Window
         processTemp.EnableRaisingEvents = false;
         processTemp.Start();
     }
+    /// <summary>
+    /// Called when downloading the CSS textures from the DownloadTextures() event
+    /// </summary>
+    /// <param name="url">The url to download from</param>
+    /// <param name="downloadPath">The path to download to</param>
     static void DownloadFile(string url, string downloadPath)
     {
         try
@@ -1031,7 +1028,6 @@ public partial class MainWindow : Window
                     }
                 }
             }
-
             Console.WriteLine(); // Move to next line after download completes
         }
         catch (Exception ex)
@@ -1039,6 +1035,11 @@ public partial class MainWindow : Window
             Console.WriteLine($"Error downloading file: {ex.Message}");
         }
     }
+    /// <summary>
+    /// Extracts the CSS textures from the zip archive
+    /// </summary>
+    /// <param name="zipFilePath">The file path of the zip file</param>
+    /// <param name="extractPath">The file path of where to extract the zip file to</param>
     static void ExtractZip(string zipFilePath, string extractPath)
     {
         try
@@ -1083,46 +1084,32 @@ public partial class MainWindow : Window
         }
         return "";
     }
-    public void GetPlayerCountAllServers() // Ported from OG SUP Launcher
+    /// <summary>
+    /// Retrieves all the player count info for all of SUP's servers
+    /// </summary>
+    private void GetPlayerCountAllServers()
     {
         try
         {
-            string Url = "https://superiorservers.co/api/servers";
-            CookieContainer cookieJar = new CookieContainer();
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(Url);
-            request.CookieContainer = cookieJar;
-            request.Accept = @"text/html, application/xhtml+xml, */*";
-            request.Referer = @"https://superiorservers.co/api";
-            request.Headers.Add("Accept-Language", "en-GB");
-            request.UserAgent = @"Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)";
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            string htmlString;
-            using (var reader = new StreamReader(response.GetResponseStream()))
-            {
-                htmlString = reader.ReadToEnd();
-            }
-            var jsonRoot = JsonDocument.Parse(htmlString).RootElement.GetProperty("response").GetProperty("Servers");
+            (danktownPlayerCount, danktownMaxPly) = A2S.GetPlayerCounts(rp1, 27015);    // Get the info using valve A2S
+            (c18PlayerCount, c18MaxPly) = A2S.GetPlayerCounts(rp2, 27015);
+            (cwrpPlayerCount, cwrpMaxPly) = A2S.GetPlayerCounts(cwrp1, 27015);
+            (cwrp2PlayerCount, cwrp2MaxPly) = A2S.GetPlayerCounts(cwrp2, 27015);
+            (cwrp3PlayerCount, cwrp3MaxPly) = A2S.GetPlayerCounts(cwrp3, 27015);
 
-            danktownPlayerCount = jsonRoot[2].GetProperty("Players").GetInt32();
-            danktownMaxPly = jsonRoot[2].GetProperty("MaxPlayers").GetInt32();
-            c18PlayerCount = jsonRoot[3].GetProperty("Players").GetInt32();
-            c18MaxPly = jsonRoot[3].GetProperty("MaxPlayers").GetInt32();
-            cwrpPlayerCount = jsonRoot[4].GetProperty("Players").GetInt32();
-            cwrpMaxPly = jsonRoot[4].GetProperty("MaxPlayers").GetInt32();
-            cwrp2PlayerCount = jsonRoot[5].GetProperty("Players").GetInt32();
-            cwrp2MaxPly = jsonRoot[5].GetProperty("MaxPlayers").GetInt32();
-            cwrp3PlayerCount = jsonRoot[6].GetProperty("Players").GetInt32();
-            cwrp3MaxPly = jsonRoot[6].GetProperty("MaxPlayers").GetInt32();
-
-            lblDanktownPlyCount.Content = $"{danktownPlayerCount.ToString()}/{danktownMaxPly}";
-            lblC18PlyCount.Content = $"{c18PlayerCount.ToString()}/{c18MaxPly}";
-            lblCWRPPlyCount.Content = $"{cwrpPlayerCount.ToString()}/{cwrpMaxPly}";
-            lblCWRP2PlyCount.Content = $"{cwrp2PlayerCount.ToString()}/{cwrp2MaxPly}";
-            lblCWRP3PlyCount.Content = $"{cwrp3PlayerCount.ToString()}/{cwrp3MaxPly}";
+            lblDanktownPlyCount.Content = $"{danktownPlayerCount}/{danktownMaxPly}";    // Set the info on the form
+            lblC18PlyCount.Content = $"{c18PlayerCount}/{c18MaxPly}";
+            lblCWRPPlyCount.Content = $"{cwrpPlayerCount}/{cwrpMaxPly}";
+            lblCWRP2PlyCount.Content = $"{cwrp2PlayerCount}/{cwrp2MaxPly}";
+            lblCWRP3PlyCount.Content = $"{cwrp3PlayerCount}/{cwrp3MaxPly}";
         }
         catch (Exception){ }
     }
-    public void InitUser()
+
+    /// <summary>
+    /// Initializes user info such as their username, avatar & rank from the SUP API.
+    /// </summary>
+    private void InitUser()
     {
         // Get Avatar from Steam
         try
@@ -1157,19 +1144,18 @@ public partial class MainWindow : Window
             WebResponse response = null;
             response = request.GetResponse(); // Get Response from webrequest
             StreamReader sr = new StreamReader(response.GetResponseStream()); // Create stream to access web data
-            JsonDocument returnData = JsonDocument.Parse(sr.ReadToEnd());
-            JsonElement darkrproot = returnData.RootElement.GetProperty("DarkRP");
-            JsonElement badminRoot = returnData.RootElement.GetProperty("Badmin");
-
-            FirstJoin.Text = DateTime.UnixEpoch.AddSeconds(double.Parse(badminRoot.GetProperty("FirstJoin").GetString())).ToShortDateString();
-            LastSeen.Text = $"{FormatDuration(badminRoot.GetProperty("LastSeen").GetDouble())} ago";
-            TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString()));
-            string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}";
+            JsonDocument returnData = JsonDocument.Parse(sr.ReadToEnd()); // Parse return data
+            JsonElement darkrproot = returnData.RootElement.GetProperty("DarkRP"); // Get DarkRP root
+            JsonElement badminRoot = returnData.RootElement.GetProperty("Badmin"); // Get Badmin root
+            FirstJoin.Text = DateTime.UnixEpoch.AddSeconds(double.Parse(badminRoot.GetProperty("FirstJoin").GetString())).ToShortDateString(); // format the time when they joined
+            LastSeen.Text = $"{FormatDuration(badminRoot.GetProperty("LastSeen").GetDouble())} ago"; // format time last seen
+            TimeSpan t = TimeSpan.FromSeconds(double.Parse(badminRoot.GetProperty("PlayTime").GetString())); // raw timespan
+            string t2 = $"{t.Days * 24 + t.Hours}:{t.Minutes}:{t.Seconds}"; // formatted timespan
             Playtime.Text = t2;
             drpMoney.Text = double.Parse(darkrproot.GetProperty("Money").GetString()).ToString("C0");
             drpKarma.Text = darkrproot.GetProperty("Karma").GetString();
             drpOrg.Text = darkrproot.GetProperty("OrgName").GetString();
-            if (drpOrg.Text == "") { drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; drpOrg.IsVisible = false; drpOrgText.IsVisible = false; }
+            if (drpOrg.Text == null) { drpBorderOrg1.IsVisible = false; drpBorderOrg2.IsVisible = false; drpOrg.IsVisible = false; drpOrgText.IsVisible = false; }
             JsonElement ranksFromResult = badminRoot.GetProperty("Ranks");
             switch (ranksFromResult.GetProperty("DarkRP").GetString())
             {
